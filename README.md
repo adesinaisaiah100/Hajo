@@ -1,6 +1,14 @@
 # Hajo
 
-A peer-to-peer credit matching and financial coordination platform built with Next.js, Express, and Supabase.
+Hajo is a two-sided local services marketplace that digitally onboards informal workers, including barbers, electricians, plumbers, tailors, event planners, dry cleaners, caterers, logistics providers, and more, and connects them to customers who need their services. Every user on the platform gets an embedded financial wallet powered by Squad API. Every transaction builds a verifiable economic identity, replacing the need for a bank history with behavioral data that grows over time.
+
+The platform addresses three simultaneous problems:
+
+- Informal workers are invisible to the formal economy. No transaction history means no credit, no insurance, no financial products.
+- Customers cannot discover or trust local service providers. Word-of-mouth is unreliable; there is no verification layer.
+- Financial institutions cannot serve this population because they have no data on them.
+
+Hajo solves all three by being the platform where informal workers work, get paid, and build a financial identity simultaneously.
 
 ## Quick Start with Docker (Recommended)
 
