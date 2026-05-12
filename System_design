@@ -1,0 +1,2065 @@
+# SkillBridge — MVP System Design & Architecture Document
+
+**Version:** 1.0 — Hackathon MVP
+**Author:** Engineering Team
+**Target:** Squad Hackathon Demo · 4-Day Build
+**Scale Target:** Pilot to 10,000 users → National deployment
+
+---
+
+## Table of Contents
+
+1. [Product Overview](#1-product-overview)
+2. [Problem Statement & Solution Framing](#2-problem-statement--solution-framing)
+3. [Core Value Propositions](#3-core-value-propositions)
+4. [System Architecture Overview](#4-system-architecture-overview)
+5. [Technology Stack — Full Justification](#5-technology-stack--full-justification)
+6. [Backend Architecture](#6-backend-architecture)
+7. [Frontend Architecture](#7-frontend-architecture)
+8. [Database Schema](#8-database-schema)
+9. [API Design & Endpoints](#9-api-design--endpoints)
+10. [Squad API Integration](#10-squad-api-integration)
+11. [AI Layer — Claude Integration](#11-ai-layer--claude-integration)
+12. [Credit Scoring System](#12-credit-scoring-system)
+13. [Authentication & Security](#13-authentication--security)
+14. [All Screens — Frontend Design Specification](#14-all-screens--frontend-design-specification)
+15. [Full Folder & File Structure](#15-full-folder--file-structure)
+16. [Dependencies — Complete List](#16-dependencies--complete-list)
+17. [Infrastructure & Deployment](#17-infrastructure--deployment)
+18. [Data Flow Diagrams](#18-data-flow-diagrams)
+19. [Background Jobs](#19-background-jobs)
+20. [Economic Viability & Business Model](#20-economic-viability--business-model)
+21. [Scalability Plan](#21-scalability-plan)
+22. [MVP Scope — In vs Out](#22-mvp-scope--in-vs-out)
+23. [4-Day Build Plan](#23-4-day-build-plan)
+
+---
+
+## 1. Product Overview
+
+**SkillBridge** is a two-sided local services marketplace that digitally onboards informal workers — barbers, electricians, plumbers, tailors, event planners, dry cleaners, caterers, logistics providers, and more — and connects them to customers who need their services. Every user on the platform gets an embedded financial wallet powered by Squad API. Every transaction builds a verifiable economic identity, replacing the need for a bank history with behavioral data that grows over time.
+
+The platform addresses three simultaneous problems:
+
+- **Informal workers are invisible to the formal economy.** No transaction history means no credit, no insurance, no financial products.
+- **Customers cannot discover or trust local service providers.** Word-of-mouth is unreliable; there is no verification layer.
+- **Financial institutions cannot serve this population** because they have no data on them.
+
+SkillBridge solves all three by being the platform where informal workers work, get paid, and build a financial identity simultaneously.
+
+---
+
+## 2. Problem Statement & Solution Framing
+
+### The Context
+
+A mid-sized African nation (Nigeria as the primary market) faces a significant economic gap: millions of skilled informal workers — artisans, tradespeople, freelancers — operate entirely outside formal systems. They earn in cash, have no transaction history, and are therefore excluded from credit, savings products, and insurance. On the other side, millions of urban residents need these services but have no trusted, searchable platform to find verified providers.
+
+### What SkillBridge Does
+
+| Hackathon Requirement | How SkillBridge Addresses It |
+|---|---|
+| Digitally onboard informal workers | Phone OTP + profile creation + Squad virtual account, all in under 5 minutes |
+| AI matching by skills, location, language, context | Claude processes natural language queries and ranks nearby verified providers with reasoning |
+| Connect users to financial services | Squad wallet created at signup; escrow payments; transaction history builds credit profile |
+| Use alternative data instead of credit history | Credit score computed from: completed bookings, total earned, average rating, account age |
+| Learn and improve as more users join | More transactions → richer scoring data → better AI matching context → better insights |
+| Squad API as core transactional layer | Virtual accounts, payment collection, escrow, transfers, and webhooks all via Squad |
+
+---
+
+## 3. Core Value Propositions
+
+### For Service Providers (Informal Workers)
+- **Get discovered** by customers in their city who can't find them on any current platform
+- **Get paid safely** with escrow protecting both parties
+- **Build a financial identity** — every completed job adds to a verifiable credit score
+- **Manage their business** from a dashboard — revenue, bookings, customer analytics
+- **Unlock financial products** — the credit score opens doors to microloans, savings, and insurance in phase 2
+
+### For Customers
+- **Find verified, rated providers** near them using plain language search powered by AI
+- **Book and pay safely** — money held in escrow until the job is confirmed complete
+- **Trust the platform** — every provider is phone-verified with a behavioral track record
+
+### For Financial Institutions (Phase 2 Partners)
+- **Access a pre-scored population** of creditworthy informal workers with 6–24 months of behavioral data
+- **No KYC cold start** — all users are phone-verified with an economic activity history
+- **API access** to anonymised credit profiles for loan underwriting
+
+---
+
+## 4. r
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        CLIENT LAYER                             │
+│   Next.js 14 Web App — deployed on Vercel — mobile-responsive  │
+│   Landing · Auth · Customer App · Provider Dashboard           │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │ HTTPS / REST JSON
+┌──────────────────────────▼──────────────────────────────────────┐
+│                        API GATEWAY                              │
+│        Node.js + Express — deployed on Render                   │
+│   CORS · Helmet · Rate Limiting · JWT Auth · Zod Validation    │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │
+┌──────────────────────────▼──────────────────────────────────────┐
+│                    BUSINESS LOGIC LAYER                         │
+│              Modular Express Services                           │
+│  auth · users · providers · services · bookings                │
+│  wallet · transactions · reviews · ai · notifications          │
+└────┬──────────────────┬──────────────────────┬──────────────────┘
+     │                  │                      │
+┌────▼────┐    ┌────────▼────────┐    ┌────────▼────────┐
+│ SQUAD   │    │  ANTHROPIC      │    │   TERMII /      │
+│  API    │    │  CLAUDE API     │    │  SUPABASE       │
+│Wallets  │    │ Matching +      │    │  STORAGE        │
+│Payments │    │ Insights + Score│    │  OTP SMS        │
+│Webhooks │    └─────────────────┘    └─────────────────┘
+└─────────┘
+     │
+┌────▼──────────────────────────────────────────────────────────┐
+│                       DATA LAYER                               │
+│        Supabase PostgreSQL + Prisma ORM                        │
+│  Users · Providers · Services · Bookings · Transactions       │
+│  Reviews · CreditScores · Notifications                        │
+└────────────────────────────────────────────────────────────────┘
+     │
+┌────▼──────────────────────────────────────────────────────────┐
+│                   BACKGROUND JOBS                              │
+│              node-cron (inside Express server)                 │
+│  Nightly score refresh · Hourly escrow timeout check          │
+└────────────────────────────────────────────────────────────────┘
+```
+
+### Architecture Principles
+
+**Modular Monolith for MVP.** The backend is structured as a monolith with clear module boundaries (Routes → Controller → Service). This is faster to build and deploy in 4 days, and the module separation means it can be decomposed into microservices when scaling demands it — without rewriting any business logic.
+
+**Supabase as infrastructure, Prisma as interface.** Supabase hosts a managed PostgreSQL instance and provides file storage for profile photos. Prisma connects to Supabase as the ORM, providing type-safe queries, schema migrations, and clean data access patterns. This combination gives speed of setup (Supabase) with code quality (Prisma).
+
+**Squad as the financial backbone.** Every financial event in the system — wallet creation, payment collection, fund transfer, withdrawal — routes through Squad API. The backend never holds money; Squad does. This means the platform is compliant and auditable from day one.
+
+**AI as a feature, not infrastructure.** Claude is called at specific, well-defined touchpoints (search matching, credit insights, business tips). This keeps AI costs predictable, responses fast, and the system functional even if the AI layer is unavailable.
+
+---
+
+## 5. Technology Stack — Full Justification
+
+### Backend
+
+| Technology | Decision | Reason |
+|---|---|---|
+| **Node.js + Express** | Primary framework | Async-first, huge ecosystem, fast to build, JSON-native. One developer can move fast. |
+| **Supabase PostgreSQL** | Primary database | Free managed Postgres, instant setup, no DevOps needed, connection string works with Prisma. |
+| **Prisma ORM** | Database interface | Type-safe queries, auto-generated migrations, readable schema definition, catches errors at compile time. |
+| **Supabase Storage** | File storage | Free CDN-backed file storage for profile photos. Replaces Cloudinary. Integrated with the same Supabase project. |
+| **Squad API** | Financial layer | Mandated by hackathon. Covers virtual accounts, collections, transfers, webhooks — everything needed. |
+| **Anthropic Claude** | AI layer | Best-in-class natural language understanding. Handles matching, scoring insights, and business tips without a custom ML model. |
+| **Termii** | SMS / OTP | Nigerian-focused SMS provider. More reliable delivery and cheaper rates than Twilio for Nigerian phone numbers. |
+| **node-cron** | Background jobs | Lightweight scheduler for nightly score refresh and hourly escrow timeout, runs inside the Express process — no separate job server needed for MVP. |
+| **Winston** | Logging | Structured logs to console in dev, file in production. Essential for debugging Squad webhook issues. |
+
+### Frontend
+
+| Technology | Decision | Reason |
+|---|---|---|
+| **Next.js 14** | Framework | **Not Vite.** Next.js App Router provides SSR for provider profile pages — critical for SEO so providers can be found via Google search. Vite is a pure SPA; Google sees blank HTML. |
+| **Tailwind CSS** | Styling | Utility-first means no context-switching between CSS and JS. Fast to build, consistent spacing system, great mobile defaults. |
+| **Zustand** | Global state | Auth user, wallet balance, UI state. Lighter and less boilerplate than Redux. Persists to localStorage for auth. |
+| **TanStack Query** | Server state | Caching, background refetching, loading/error states, automatic stale-while-revalidate. Eliminates most useEffect/useState data fetching patterns. |
+| **React Hook Form + Zod** | Forms | Uncontrolled inputs = no re-renders on keystroke. Zod schemas are shared with the backend, so frontend and backend validation are always in sync. |
+| **Recharts** | Charts | Provider analytics dashboard — monthly revenue bar chart, score history line chart, service breakdown. Composable and Tailwind-compatible. |
+| **Radix UI Primitives** | Accessible components | Unstyled accessible primitives for modals, tabs, selects. Style with Tailwind. Avoids the complexity of full component libraries. |
+| **Framer Motion** | Animations | Page transitions, score badge reveal animation, success states. Makes the demo feel polished. |
+
+### Infrastructure
+
+| Service | Use | Why |
+|---|---|---|
+| **Render** | Backend hosting | Free tier supports Express servers with auto-deploy from GitHub. Supports environment variables and webhooks. |
+| **Vercel** | Frontend hosting | Zero-config Next.js deployment. Automatic SSR, CDN, preview deployments on every push. |
+| **Supabase** | Database + Storage | Free tier: 500MB DB, 1GB storage — more than enough for a demo with 10,000 users. |
+| **GitHub** | Version control | Source of truth, triggers Render + Vercel auto-deploys on push to main. |
+
+---
+
+## 6. Backend Architecture
+
+### Design Pattern: Routes → Controller → Service
+
+Every module follows the same three-layer pattern. This is non-negotiable for maintainability:
+
+```
+Request → Route (defines endpoint + middleware chain)
+        → Controller (unpacks req, calls service, sends res)
+        → Service (all business logic, DB queries, external API calls)
+        → Response
+```
+
+**Why this matters:** When a bug occurs, you always know exactly which file to look in. Routes never touch the database. Controllers never call external APIs. Services never touch `req` or `res`. This separation makes the codebase navigable even under time pressure.
+
+### Module Responsibilities
+
+**`auth` module**
+Handles user registration, OTP generation and verification, login (passwordless), JWT issuance (access token + refresh token). On successful registration, triggers Squad virtual account creation and saves the account number to the user record. OTPs are 6-digit codes stored in-memory with a 5-minute TTL.
+
+**`users` module**
+Manages the authenticated user's own profile — reading and updating name, bio, photo, location, NIN. Photo uploads go to Supabase Storage; only the public URL is stored in Postgres.
+
+**`providers` module**
+Manages provider-specific data that sits on top of the base user record — trade category, experience, price range, availability status, and the aggregated stats (total jobs, total earned, average rating, credit score). Also exposes the public profile endpoint used by the SSR frontend.
+
+**`services` module**
+Providers create individual service listings (e.g., "Full haircut + shave — ₦3,000 — 45 mins"). Customers see these on the provider's profile and select one when booking. Services can be paused without deletion. Services cannot be deleted if they have active bookings against them.
+
+**`bookings` module**
+The most complex module. Manages the full booking lifecycle: PENDING → ACCEPTED → ACTIVE → COMPLETED or CANCELLED or DISPUTED. On acceptance, triggers Squad escrow charge. On completion, triggers Squad escrow release. On cancellation before acceptance, no charge occurs. On cancellation after acceptance, Squad refund is initiated. Every status change fires a notification.
+
+**`wallet` module**
+A thin wrapper around Squad API. Fetches live balance from Squad, initiates withdrawal transfers to a Nigerian bank account, and exposes the Squad virtual account number for funding via bank transfer.
+
+**`transactions` module**
+Stores every financial event received via Squad webhook. Provides paginated history for both providers and customers. Generates the earnings summary (total by month, by service) that powers the analytics dashboard.
+
+**`reviews` module**
+Customers can submit one review per completed booking. Reviews are validated to ensure the booking exists, is completed, belongs to this customer, and has not already been reviewed. On creation, the provider's `avgRating` field is recalculated and saved.
+
+**`ai` module**
+Three functions: provider matching (natural language → ranked list), credit scoring (behavioral data → score breakdown), and business insights (transaction history → Claude-generated tips). Each function has a carefully crafted system prompt stored in `claude.prompts.js`.
+
+**`notifications` module**
+Creates in-app notification records on relevant events (new booking, booking accepted, payment received). Also triggers Termii SMS for critical events (payment received, booking request). Notification count is exposed in the top bar.
+
+### Error Handling
+
+A global error handler catches all unhandled errors. The `AppError` class allows any service to throw a structured error with a specific HTTP status code and message. Prisma errors (duplicate key, not found) are caught and converted to human-readable messages before reaching the client. The error response shape is always:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "BOOKING_NOT_FOUND",
+    "message": "This booking does not exist or you do not have access to it."
+  }
+}
+```
+
+---
+
+## 7. Frontend Architecture
+
+### Routing Structure (Next.js App Router)
+
+The App Router uses route groups to separate layouts without affecting URL structure:
+
+```
+(marketing)   — public pages with landing nav + footer
+(auth)        — centered card layout, no nav
+(dashboard)   — authenticated, role-aware sidebar layout
+```
+
+Middleware at the root level (`middleware.js`) runs at the edge before any page loads. It reads the JWT from cookies, verifies it, checks the user's role, and redirects if the user is not authorised for the requested route. This means unauthenticated users can never render a protected page, even for a flash.
+
+### State Management Strategy
+
+Two types of state are managed differently:
+
+**Server state (React Query):** All data that comes from the API — bookings, transactions, provider profiles, balance. React Query caches it, refetches it in the background, and handles loading/error states. This eliminates the need for `useEffect` + `useState` for data fetching.
+
+**Client state (Zustand):** Data that lives on the client — the authenticated user object, wallet balance snapshot, UI flags (sidebar open/closed, which modal is active). Zustand persists the auth token to `localStorage` so the user stays logged in on refresh.
+
+### API Communication Layer
+
+All API calls go through a single Axios instance (`src/services/api.js`). This instance:
+- Sets the `Authorization: Bearer <token>` header automatically from Zustand
+- Intercepts 401 responses and redirects to `/login` with the current path as a return URL
+- Applies the base URL from environment variables
+
+Each feature has its own API file (`booking.api.js`, `wallet.api.js`, etc.) that exports typed async functions. Components never call Axios directly — they call these functions, which React Query wraps.
+
+### Component Architecture
+
+Three levels of components:
+
+**`ui/` components** — Pure presentational. Accept props, render HTML, no API calls, no state. `Button`, `Input`, `Badge`, `Card`, `Modal`, `Avatar`. These are the design system atoms.
+
+**`shared/` components** — Used across multiple pages. May read from Zustand but do not fetch from API. `Sidebar`, `Topbar`, `ProviderCard`, `Navbar`.
+
+**Feature components** — Specific to one feature domain. May use React Query hooks to fetch their own data. `EarningsChart`, `AISearchBar`, `BookingCard`, `PaymentModal`.
+
+---
+
+## 8. Database Schema
+
+Full Prisma schema for all eight models.
+
+```prisma
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── ENUMS ───────────────────────────────────────
+
+enum Role {
+  PROVIDER
+  CUSTOMER
+}
+
+enum BookingStatus {
+  PENDING
+  ACCEPTED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  DISPUTED
+}
+
+enum TransactionType {
+  PAYMENT
+  CREDIT
+  WITHDRAWAL
+  REFUND
+  TOPUP
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum ScoreTier {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+}
+
+// ─── MODELS ──────────────────────────────────────
+
+model User {
+  id                 String    @id @default(uuid())
+  phone              String    @unique
+  name               String
+  role               Role
+  photoUrl           String?
+  state              String
+  lga                String
+  nin                String?
+  squadAccountNo     String?
+  squadAccountRef    String?
+  squadCustomerId    String?
+  isVerified         Boolean   @default(false)
+  isActive           Boolean   @default(true)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  // Relations
+  provider           Provider?
+  customerBookings   Booking[]       @relation("CustomerBookings")
+  transactions       Transaction[]
+  notifications      Notification[]
+  reviews            Review[]        @relation("CustomerReviews")
+}
+
+model Provider {
+  id              String     @id @default(uuid())
+  userId          String     @unique
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tradeCategory   String
+  bio             String     @db.VarChar(300)
+  yearsExperience Int        @default(0)
+  priceMin        Decimal    @default(0) @db.Decimal(12, 2)
+  priceMax        Decimal    @default(0) @db.Decimal(12, 2)
+
+  latitude        Float?
+  longitude       Float?
+
+  avgRating       Float      @default(0.0)
+  totalJobs       Int        @default(0)
+  totalEarned     Decimal    @default(0) @db.Decimal(14, 2)
+  completionRate  Float      @default(0.0)
+  responseTimeAvg Int        @default(0) // minutes
+
+  isAvailable     Boolean    @default(true)
+  creditScore     Float      @default(0)
+  scoreTier       ScoreTier  @default(BRONZE)
+
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  // Relations
+  services        Service[]
+  bookings        Booking[]  @relation("ProviderBookings")
+  reviews         Review[]   @relation("ProviderReviews")
+  creditScores    CreditScore[]
+}
+
+model Service {
+  id            String    @id @default(uuid())
+  providerId    String
+  provider      Provider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  name          String
+  description   String?
+  price         Decimal   @db.Decimal(12, 2)
+  durationMins  Int
+  category      String
+  isActive      Boolean   @default(true)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  bookings      Booking[]
+}
+
+model Booking {
+  id              String        @id @default(uuid())
+  customerId      String
+  customer        User          @relation("CustomerBookings", fields: [customerId], references: [id])
+  providerId      String
+  provider        Provider      @relation("ProviderBookings", fields: [providerId], references: [id])
+  serviceId       String
+  service         Service       @relation(fields: [serviceId], references: [id])
+
+  status          BookingStatus @default(PENDING)
+  scheduledAt     DateTime
+  jobAddress      String
+  description     String
+  amount          Decimal       @db.Decimal(12, 2)
+  platformFee     Decimal       @db.Decimal(12, 2)
+  totalCharged    Decimal       @db.Decimal(12, 2)
+
+  squadEscrowRef  String?
+  squadPaymentRef String?
+
+  acceptedAt      DateTime?
+  completedAt     DateTime?
+  cancelledAt     DateTime?
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  transactions    Transaction[]
+  review          Review?
+}
+
+model Transaction {
+  id            String            @id @default(uuid())
+  userId        String
+  user          User              @relation(fields: [userId], references: [id])
+  bookingId     String?
+  booking       Booking?          @relation(fields: [bookingId], references: [id])
+
+  type          TransactionType
+  amount        Decimal           @db.Decimal(12, 2)
+  squadRef      String            @unique
+  squadEvent    String
+  status        TransactionStatus @default(PENDING)
+  description   String
+  metadata      Json?             // raw Squad webhook payload
+
+  createdAt     DateTime          @default(now())
+}
+
+model Review {
+  id          String    @id @default(uuid())
+  bookingId   String    @unique
+  booking     Booking   @relation(fields: [bookingId], references: [id])
+  customerId  String
+  customer    User      @relation("CustomerReviews", fields: [customerId], references: [id])
+  providerId  String
+  provider    Provider  @relation("ProviderReviews", fields: [providerId], references: [id])
+
+  rating      Int       // 1–5
+  comment     String?
+
+  createdAt   DateTime  @default(now())
+}
+
+model CreditScore {
+  id             String     @id @default(uuid())
+  providerId     String
+  provider       Provider   @relation(fields: [providerId], references: [id])
+
+  score          Float      // 0–100
+  jobsScore      Float      // sub-score: completed bookings (40% weight)
+  earningsScore  Float      // sub-score: total earned (30% weight)
+  ratingScore    Float      // sub-score: avg rating (20% weight)
+  tenureScore    Float      // sub-score: account age in days (10% weight)
+  tier           ScoreTier
+
+  computedAt     DateTime   @default(now())
+}
+
+model Notification {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+
+  type        String
+  title       String
+  body        String
+  isRead      Boolean   @default(false)
+  relatedId   String?   // bookingId or transactionId for deep-linking
+
+  createdAt   DateTime  @default(now())
+}
+```
+
+### Key Schema Decisions
+
+**Decimal for all money fields.** Never use `Float` for money. `Decimal` in Prisma maps to PostgreSQL's `NUMERIC` type, which avoids floating point rounding errors that would cause pence/kobo discrepancies.
+
+**`metadata Json?` on Transaction.** The raw Squad webhook payload is stored so it can be replayed or debugged if something goes wrong with the webhook processing. This is critical for financial reconciliation.
+
+**`@unique` on `Review.bookingId`.** Enforced at the database level — one review per booking, not just at the application level. Cannot be bypassed by a race condition.
+
+**`onDelete: Cascade` on Provider → User.** If a user account is deleted, their provider profile is automatically removed too. Prevents orphaned provider records.
+
+---
+
+## 9. API Design & Endpoints
+
+All endpoints are prefixed with `/api`. Protected endpoints require `Authorization: Bearer <token>` header. Role-protected endpoints additionally require the correct role.
+
+### Standard Response Shape
+
+**Success:**
+```json
+{
+  "success": true,
+  "message": "Booking accepted successfully",
+  "data": { ... }
+}
+```
+
+**Error:**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "INSUFFICIENT_BALANCE",
+    "message": "Your wallet balance is too low for this payment."
+  }
+}
+```
+
+### Auth Endpoints
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| POST | `/api/auth/register` | Public | Creates user, sends OTP via Termii |
+| POST | `/api/auth/verify-otp` | Public | Verifies OTP, issues JWT pair, creates Squad virtual account |
+| POST | `/api/auth/login` | Public | Sends OTP to existing phone number |
+| POST | `/api/auth/refresh` | Public | Issues new access token from refresh token cookie |
+| POST | `/api/auth/logout` | Protected | Invalidates refresh token |
+
+### User & Provider Endpoints
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/api/users/me` | Protected | Returns authenticated user with provider/customer data |
+| PATCH | `/api/users/me` | Protected | Updates name, bio, photo URL, location, NIN |
+| GET | `/api/providers` | Public | Lists providers — query: `category`, `lat`, `lng`, `radius`, `minRating`, `page`, `limit` |
+| GET | `/api/providers/:id` | Public | Full public profile — profile + services + reviews + score |
+| PATCH | `/api/providers/me` | Provider | Updates trade, experience, price range, availability |
+
+### Service Listing Endpoints
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/api/services?providerId=` | Public | Lists all active services for a provider |
+| POST | `/api/services` | Provider | Creates new service listing |
+| PATCH | `/api/services/:id` | Provider | Updates service fields, pause/unpause |
+| DELETE | `/api/services/:id` | Provider | Deletes service (blocked if active bookings exist) |
+
+### Booking Endpoints
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| POST | `/api/bookings` | Customer | Creates booking request, notifies provider |
+| GET | `/api/bookings` | Protected | Lists bookings for current user — query: `status`, `page` |
+| GET | `/api/bookings/:id` | Protected | Single booking detail (access-checked by ownership) |
+| PATCH | `/api/bookings/:id/accept` | Provider | Accepts booking, initiates Squad escrow charge |
+| PATCH | `/api/bookings/:id/decline` | Provider | Declines booking, no charge |
+| PATCH | `/api/bookings/:id/complete` | Customer | Marks complete, triggers Squad escrow release to provider |
+| PATCH | `/api/bookings/:id/cancel` | Protected | Cancels booking, refunds if already charged |
+
+### Wallet & Transaction Endpoints
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/api/wallet/balance` | Protected | Live Squad wallet balance + account number |
+| POST | `/api/wallet/withdraw` | Provider | Initiates bank withdrawal via Squad transfer |
+| GET | `/api/transactions` | Protected | Paginated transaction history — query: `page`, `limit`, `type` |
+| GET | `/api/transactions/summary` | Provider | Earnings summary: total earned, by month (last 6), by service |
+| POST | `/api/webhooks/squad` | Squad | Receives Squad webhook events — HMAC verified |
+
+### Review Endpoints
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| POST | `/api/reviews` | Customer | Submit review — validated against completed booking ownership |
+| GET | `/api/reviews/provider/:id` | Public | Paginated reviews for a provider |
+
+### AI Endpoints
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| POST | `/api/ai/match` | Customer | Natural language query + location → Claude → ranked providers with reasons |
+| GET | `/api/ai/score/:providerId` | Protected | Compute and return full credit score breakdown |
+| GET | `/api/ai/insights/:providerId` | Provider | Claude-generated business insights from transaction data |
+
+---
+
+## 10. Squad API Integration
+
+Squad API is the mandatory financial backbone of SkillBridge. It powers four distinct functions, each implemented in a separate file in `src/integrations/squad/`.
+
+### 10.1 Virtual Account Creation
+
+**Trigger:** After a user verifies their OTP and their account is confirmed, the auth service calls Squad to create a virtual account.
+
+**Squad endpoint:** `POST /virtual-account`
+
+**What we store:**
+- `squadAccountNo` — the assigned NUBAN account number
+- `squadAccountRef` — Squad's internal reference for this account
+- `squadCustomerId` — Squad's customer ID
+
+**Display:** The account number is shown on the user's wallet screen. They can fund their wallet by transferring to this account number from any Nigerian bank.
+
+```javascript
+// src/integrations/squad/squad.virtualAccount.js
+
+async function createVirtualAccount({ userId, name, phone, email }) {
+  const response = await squadClient.post('/virtual-account', {
+    customer_identifier: userId,
+    display_name: name,
+    bvn: null, // optional for MVP
+    first_name: name.split(' ')[0],
+    last_name: name.split(' ').slice(1).join(' '),
+    mobile_num: phone,
+    email: email || `${phone}@skillbridge.ng`
+  });
+  return response.data.data;
+}
+```
+
+### 10.2 Payment Collection (Escrow Charge)
+
+**Trigger:** When a provider accepts a booking, the booking service charges the customer's Squad wallet.
+
+**Squad endpoint:** `POST /transaction/initiate`
+
+**Escrow logic:** The platform holds the reference of the Squad transaction. Funds are not released to the provider until the customer marks the booking complete or the 48-hour auto-release timeout fires.
+
+```javascript
+// src/integrations/squad/squad.payment.js
+
+async function chargeWallet({ amount, customerAccountRef, bookingId }) {
+  const response = await squadClient.post('/transaction/initiate', {
+    amount: amount * 100, // Squad uses kobo
+    payment_channels: ['squad_wallet'],
+    currency: 'NGN',
+    transaction_ref: `BKNG-${bookingId}`,
+    customer_id: customerAccountRef,
+    description: `Payment for booking ${bookingId}`
+  });
+  return response.data.data;
+}
+```
+
+### 10.3 Fund Transfer (Escrow Release + Withdrawal)
+
+**Trigger (Release):** Customer marks booking complete. Booking service calls the transfer function to move funds from the platform holding account to the provider's Squad wallet.
+
+**Trigger (Withdrawal):** Provider requests bank withdrawal. Wallet service calls transfer to move funds from their Squad wallet to their nominated Nigerian bank account.
+
+```javascript
+// src/integrations/squad/squad.transfer.js
+
+async function transferToWallet({ amount, providerId, bookingId }) {
+  const response = await squadClient.post('/payout/transfer', {
+    amount: amount * 100,
+    transaction_ref: `REL-${bookingId}`,
+    beneficiary_account: providerId, // Squad wallet reference
+    currency: 'NGN',
+    remark: `Payment release for booking ${bookingId}`
+  });
+  return response.data.data;
+}
+```
+
+### 10.4 Webhook Processing
+
+**Trigger:** Squad fires a POST request to `/api/webhooks/squad` on every financial event.
+
+**Security:** Every incoming webhook request is verified by computing an HMAC-SHA512 signature of the raw request body using the Squad secret key and comparing it to the `x-squad-encrypted-body` header. Requests that fail this check are rejected with a 401.
+
+**Events handled:**
+- `charge.success` — payment received, create transaction record, update customer wallet
+- `transfer.success` — fund release or withdrawal confirmed, create transaction, update provider stats
+- `virtual-account.credit` — wallet funded via bank transfer, create transaction record
+
+**After every `transfer.success` for a booking release, the webhook handler:**
+1. Writes the transaction to the `transactions` table
+2. Updates `provider.totalEarned` and `provider.totalJobs`
+3. Triggers the credit score recalculation for that provider
+4. Creates an in-app notification for the provider ("Payment of ₦X received")
+5. Sends an SMS via Termii
+
+---
+
+## 11. AI Layer — Claude Integration
+
+The AI layer uses Anthropic's Claude (`claude-sonnet-4-20250514`) at three specific, well-defined touchpoints. All prompts are stored as named exports in `src/integrations/claude/claude.prompts.js` so they can be tuned without touching service logic.
+
+### 11.1 Provider Matching (Search)
+
+**Input:** Customer's natural language query + their latitude/longitude + radius preference.
+
+**Process:**
+1. Backend queries Postgres for providers within the specified radius (using lat/lng Euclidean distance for MVP, PostGIS for scale)
+2. Filters by category if the query implies one
+3. Takes up to 15 providers and packages their profiles (name, category, bio, rating, price, distance, total jobs, score tier)
+4. Sends the package to Claude with the system prompt and user query
+5. Claude returns a ranked JSON array with a `matchReason` string for each provider
+
+**System prompt:**
+```
+You are a matching engine for a Nigerian local services marketplace.
+You will be given a customer's service request in plain language and a list of
+nearby verified service providers. Return a JSON array ranking the most
+suitable providers for this request. Include only providers from the list given.
+
+For each provider, include:
+- id (exact, unchanged)
+- rank (1 = best match)
+- matchReason (one sentence, plain English, why this provider suits the request)
+- confidence (high / medium / low)
+
+Consider: trade category relevance, price fit, rating, experience, availability.
+Be concise. Do not invent information. Only use data provided.
+Return only the JSON array, no preamble.
+```
+
+**Output displayed to user:** Provider cards sorted by Claude's rank, with the `matchReason` shown in italic below each card.
+
+### 11.2 Business Insights
+
+**Input:** Provider's transaction history (last 90 days), booking data, customer location breakdown, rating trends.
+
+**Process:**
+1. Backend aggregates the provider's data into a structured summary
+2. Sends to Claude with the insights system prompt
+3. Claude returns 3–5 insight cards, each with a title, explanation, and suggested action
+
+**Example output from Claude:**
+```json
+[
+  {
+    "title": "Saturdays are your peak day",
+    "insight": "72% of your completed bookings happen on Saturdays. You could earn more by raising prices 15–20% on Saturdays or blocking slots for premium bookings.",
+    "action": "Adjust your availability or pricing for weekends"
+  },
+  {
+    "title": "Ikeja customers book you most",
+    "insight": "6 of your last 10 customers are from Ikeja LGA. You may be underrepresented there — consider listing Ikeja as a service area explicitly in your bio.",
+    "action": "Update your bio to mention Ikeja coverage"
+  }
+]
+```
+
+**Refresh cadence:** Computed on demand when the provider opens the Insights page, cached for 24 hours per provider.
+
+### 11.3 Credit Score Narrative
+
+**Input:** Provider's current credit score breakdown (sub-scores and tier).
+
+**Process:** Claude generates one paragraph explaining the score in plain, encouraging language, and lists two concrete actions the provider can take to improve their score this month.
+
+**Example output:**
+```
+Your Silver score of 64 reflects strong earnings and consistent customer ratings.
+Your biggest opportunity to move to Gold is completing more bookings — you need
+8 more completed jobs this month. Responding to booking requests within 2 hours
+will also improve your response time sub-score significantly.
+```
+
+---
+
+## 12. Credit Scoring System
+
+The credit score is the core alternative data layer. It produces a number from 0 to 100 for every provider and maps it to a tier. No bank history is required.
+
+### Scoring Formula
+
+```
+Total Score = (Jobs Score × 0.40)
+            + (Earnings Score × 0.30)
+            + (Rating Score × 0.20)
+            + (Tenure Score × 0.10)
+```
+
+### Sub-Score Calculations
+
+**Jobs Score (40% weight)**
+```
+Jobs Score = min(completedBookings / 50, 1) × 100
+```
+A provider who has completed 50 or more jobs gets a perfect jobs score. A provider with 10 jobs gets 20 points, contributing 8 points to the total score.
+
+**Earnings Score (30% weight)**
+```
+Earnings Score = min(totalEarned / 500000, 1) × 100
+```
+₦500,000 in total earnings represents the cap for a perfect earnings score. A provider who has earned ₦100,000 gets 20 points, contributing 6 points to the total score.
+
+**Rating Score (20% weight)**
+```
+Rating Score = ((avgRating - 1) / 4) × 100
+```
+Normalises the 1–5 star rating to a 0–100 scale. A provider with a 4.5 average gets 87.5 points, contributing 17.5 points to the total score.
+
+**Tenure Score (10% weight)**
+```
+Tenure Score = min(accountAgeDays / 365, 1) × 100
+```
+An account that is 1 year or older gets a perfect tenure score. This rewards established providers and discourages fake accounts.
+
+### Tier Thresholds
+
+| Score Range | Tier | Meaning |
+|---|---|---|
+| 0–24 | Bronze | New provider, building history |
+| 25–49 | Silver | Established, consistent provider |
+| 50–74 | Gold | High-performing, trusted provider |
+| 75–100 | Platinum | Top-tier, eligible for financial products |
+
+### When Scores Update
+
+1. **Real-time:** Immediately after every `transfer.success` Squad webhook (a booking was just completed and paid)
+2. **Nightly batch:** A cron job at 2:00 AM recalculates scores for all active providers — catches any edge cases missed by real-time updates
+
+### Future Use of the Score (Phase 2)
+
+The credit score is designed to be the entry point to formal financial products. A Platinum provider with ₦800,000 processed through the platform is a strong loan candidate even with no bank history. Phase 2 financial institution partners will access scores via a verified API, enabling:
+- Microloans up to ₦500,000 for Gold and Platinum providers
+- Savings products with preferential rates
+- Parametric micro-insurance on bookings
+
+---
+
+## 13. Authentication & Security
+
+### Passwordless OTP Authentication
+
+The platform uses phone number + OTP only. No passwords. Reasons:
+- Lower friction for a population that may struggle with password management
+- Phone number is a verified identity signal (SIM registration is mandatory in Nigeria)
+- OTP via Termii SMS is reliable and cheap at Nigerian rates
+
+### JWT Strategy
+
+**Access token:** Short-lived (15 minutes). Sent in the `Authorization` header on every API request.
+
+**Refresh token:** Long-lived (30 days). Stored in an `httpOnly` cookie — cannot be accessed by JavaScript, protecting against XSS theft. Used to issue new access tokens silently without forcing re-login.
+
+### Request Security
+
+- **Helmet.js:** Sets 11 security-related HTTP headers (X-Frame-Options, Content-Security-Policy, etc.)
+- **CORS:** Only the Vercel frontend origin is whitelisted
+- **Rate limiting:** 100 requests per 15 minutes globally; 5 OTP requests per 15 minutes per IP
+- **Zod validation:** Every request body is validated against a schema before reaching the controller. Malformed requests are rejected with a 400 and a field-level error message
+- **Squad webhook HMAC:** Every incoming Squad webhook is verified cryptographically
+
+### Role Guards
+
+Two middleware functions protect endpoints by role:
+- `requireAuth` — checks JWT validity, attaches `req.user`
+- `requireRole('provider')` or `requireRole('customer')` — checks `req.user.role`
+
+Provider-only actions (accept booking, create service, withdraw) cannot be performed by customer accounts at the API level regardless of what the frontend shows.
+
+---
+
+## 14. All Screens — Frontend Design Specification
+
+### Design Principles for the Designer
+
+- **Mobile-first.** Design at 390px width (iPhone 14 base). Most Nigerian users will access on a phone via Chrome.
+- **High contrast.** The primary color palette should work in direct sunlight.
+- **Progressive disclosure.** Show the minimum needed on each screen. Don't overwhelm.
+- **Currency formatting.** All amounts in ₦ with comma separators (₦1,200,000 not ₦1200000).
+- **Score tier colors:** Bronze = #CD7F32, Silver = #A8A9AD, Gold = #FFD700, Platinum = #E5E4E2 on dark bg.
+
+---
+
+### Shared Screens (2)
+
+---
+
+#### Screen 01 — Landing Page
+**Route:** `/`
+**Type:** Public, SSR, marketing
+**Layout:** Full-width sections, marketing nav (logo + Login + Get Started buttons), sticky header on scroll
+
+**Sections (top to bottom):**
+1. **Hero** — Bold headline ("Find trusted local skills. Book. Pay safely."). Sub-headline. Two CTA buttons: "I need a service" (primary) and "I offer a service" (secondary outline). Background: abstract illustration of Nigerian city + service icons.
+2. **Marquee strip** — Scrolling horizontal list of service category icons + names (Barber, Plumber, Electrician, Tailor, Chef, Event Planner, Dry Cleaner, Logistics…)
+3. **How it works** — 3-column (desktop) / vertical (mobile): Step 1: Register & get verified, Step 2: Find or get found via AI search, Step 3: Book, pay safely, build your score. Each step has an icon and 2-line description.
+4. **Trust stats bar** — Live-ish numbers: "X verified providers", "X bookings completed", "₦X processed". Light background band.
+5. **Credit score preview** — A visual card showing a fictional provider "Emeka the Electrician" with a Platinum badge, ₦1.2M processed, 4.8 stars. Caption: "Every job builds your financial identity."
+6. **CTA footer** — "Ready to join? It takes 3 minutes." with both role CTAs again.
+7. **Footer** — Logo, links (Privacy Policy, Terms, Contact), social icons.
+
+---
+
+#### Screen 02 — Onboarding Success
+**Route:** `/welcome`
+**Type:** Protected, full-screen state
+**Layout:** Centered, single-column, no nav
+
+**Elements:**
+- Large animated checkmark or confetti (Framer Motion)
+- "You're in!" heading
+- Squad virtual account number displayed in a card with bank name ("Wema Bank / 0123456789") with a copy button
+- Credit score badge — Bronze with 0/100 score and a message: "Your score grows with every job completed"
+- Checklist: ✓ Account created ✓ Wallet ready — Next: "Add your first service" (provider) or "Find a service near you" (customer)
+- Single CTA button routing to the correct dashboard
+
+---
+
+### Auth Screens (5)
+
+---
+
+#### Screen 03 — Role Selection
+**Route:** `/register`
+**Type:** Public
+**Layout:** Two large cards side by side (stacked on mobile)
+
+**Elements:**
+- Page title: "How do you want to use SkillBridge?"
+- **Provider card** — Icon (toolbox or wrench), "I offer services", subtitle: "Register your trade, get bookings, build your financial profile". Primary border on hover/select.
+- **Customer card** — Icon (phone/search), "I need services", subtitle: "Find verified local providers, book safely, pay with escrow protection."
+- "Already have an account? Log in" link at the bottom.
+
+---
+
+#### Screen 04 — Provider Registration
+**Route:** `/register/provider`
+**Type:** Public
+**Layout:** Centered card, progress dots at top (3 steps)
+
+**Step 1 — Personal Details:**
+- Full name (text input)
+- Phone number (with +234 prefix selector)
+- State (dropdown — all 36 Nigerian states)
+- LGA (dropdown — populated dynamically based on state)
+- "Continue" button
+
+**Step 2 — Trade Details:**
+- Trade category (searchable dropdown — 20+ categories)
+- Years of experience (number input or radio: 0–1, 1–3, 3–5, 5+)
+- Price range minimum (₦ input)
+- Price range maximum (₦ input)
+- Bio (textarea, 300 char limit with counter)
+- "Continue" button / "Back" link
+
+**Step 3 — Identity (Optional but Encouraged):**
+- Profile photo (upload area — drag or tap, shows preview)
+- NIN (text input — 11 digits, labelled "Optional — helps build your trust score faster")
+- Terms checkbox
+- "Create my account" button (triggers API call, then redirect to OTP verify)
+
+---
+
+#### Screen 05 — Customer Registration
+**Route:** `/register/customer`
+**Type:** Public
+**Layout:** Centered card, single page
+
+**Elements:**
+- Full name
+- Phone number
+- State + LGA dropdowns
+- Profile photo (optional upload)
+- Terms checkbox
+- "Create my account" button
+
+---
+
+#### Screen 06 — OTP Verification
+**Route:** `/verify-otp`
+**Type:** Public
+**Layout:** Centered card
+
+**Elements:**
+- "Enter the 6-digit code sent to +234 XXX XXX X789" (masked phone)
+- Six individual digit input boxes, auto-advance on input, auto-backspace on delete
+- 60-second countdown: "Resend in 0:42"
+- Resend button (active after countdown expires)
+- Error state: boxes turn red, "Incorrect code. X attempts remaining."
+- Loading state on submit: spinner replaces the verify button
+- On success: brief success animation then redirect
+
+---
+
+#### Screen 07 — Login
+**Route:** `/login`
+**Type:** Public
+**Layout:** Centered card
+
+**Elements:**
+- "Welcome back" heading
+- Phone number input
+- "Send OTP" button
+- On click: sends OTP and transitions to OTP verify screen (same component, different context)
+- "Don't have an account? Register" link
+
+---
+
+### Customer Screens (8)
+
+---
+
+#### Screen 08 — Customer Home
+**Route:** `/customer`
+**Type:** Protected (Customer), CSR
+**Layout:** Mobile: bottom nav (5 tabs). Desktop: sidebar nav.
+
+**Elements:**
+- **Top bar:** "Good morning, Amaka 👋" + notification bell (badge count) + wallet balance chip (₦12,400)
+- **AI Search bar** (large, prominent): placeholder "What do you need? e.g. plumber, tailor in Lagos" — tapping navigates to search page with cursor in the bar
+- **Category chips:** Horizontal scroll — Barber, Plumber, Electrician, Tailor, Chef, Event Planner, Dry Cleaner, Logistics, + View All. Each has an icon.
+- **Near you section:** Grid of ProviderCards (2 columns mobile, 3 desktop). Each card: photo, name, trade badge, score tier badge, ⭐ rating, ₦ price range, distance (km). Tapping opens provider profile.
+- **Bottom nav (mobile):** Home, Search, Bookings (badge), Wallet, Profile
+
+---
+
+#### Screen 09 — AI Search Results
+**Route:** `/search`
+**Type:** Public (no auth required to browse)
+**Layout:** Persistent top bar, scrollable results
+
+**Elements:**
+- **Search bar** at top (editable, with clear button, with loading spinner while AI processes)
+- **Filter row:** Category dropdown | Distance (1km / 5km / 10km / 20km) | Min rating (stars toggle) | Sort (Relevance / Price ↑ / Rating ↓)
+- **Results count:** "Claude found 12 providers matching your request"
+- **Result cards (list layout):** Provider photo (60×60, rounded), name, trade badge, score badge, ⭐ X.X (N reviews), ₦X–₦X, X.Xkm away. **Below the card:** italic text in a light info-colored band: *"Matched because: 4.9 stars for electrical work, available weekends, operates in your area"*
+- **Skeleton loaders:** 3 placeholder cards while the AI request is in flight
+- **Empty state:** "No providers found near you for this request. Try a wider area or different search."
+
+---
+
+#### Screen 10 — Provider Public Profile
+**Route:** `/providers/[id]`
+**Type:** Public, **SSR** (critical for Google indexing)
+**Layout:** Single column, sticky bottom CTA
+
+**Elements:**
+- **Profile header:** Large cover photo area (or gradient if no photo). Circular avatar. Name (large). Trade category badge. Verified checkmark. Score tier badge (Bronze/Silver/Gold/Platinum with color). "Available now" or "Unavailable" dot.
+- **Stats row (4 chips):** ✅ X jobs completed | ₦X processed | ⭐ X.X avg rating | 📅 Member X months
+- **Bio section:** Full bio text. State + LGA. Price range.
+- **Services section:** Cards for each service — name, duration, price, "Select" button.
+- **Reviews section:** Rating distribution bar (5 stars count…1 star count). Review cards with customer name, date, stars, comment.
+- **Sticky bottom bar:** "Book [Provider Name]" full-width button. Only shown to logged-in customers.
+
+---
+
+#### Screen 11 — Book a Provider
+**Route:** `/providers/[id]/book`
+**Type:** Protected (Customer)
+**Layout:** Single column form
+
+**Elements:**
+- Mini provider header (photo + name + trade) at the top for context
+- **Service selector:** Radio cards for each of the provider's services (name, price, duration per service)
+- **Date picker:** Calendar or date input — cannot select past dates or dates provider is unavailable
+- **Time picker:** Dropdown of available time slots
+- **Job address:** Text input — "Where should the provider come to?"
+- **Job description:** Textarea — "Describe the job in detail"
+- **Price summary card:** Service price (₦X), Platform fee (₦X — 5%), Total (₦X in bold)
+- **"Proceed to payment"** button — disabled until all fields complete
+
+---
+
+#### Screen 12 — Payment Confirmation
+**Route:** `/bookings/new/pay`
+**Type:** Protected (Customer)
+**Layout:** Centered confirmation card
+
+**Elements:**
+- Provider photo + name + service summary
+- Date + time + address (read-only)
+- **Price breakdown:** Service ₦X | Platform fee ₦X | Total ₦X
+- **Wallet balance:** "Your current balance: ₦X" — in green if sufficient, red if insufficient
+- **"Pay ₦X from Wallet"** (primary CTA — only active if balance sufficient)
+- **"Fund wallet first"** (secondary link — if balance insufficient, opens wallet screen)
+- On pay click: loading state ("Processing your payment…") → success animation → redirect to booking detail
+- Note: "Your payment is held securely until you confirm the job is complete"
+
+---
+
+#### Screen 13 — My Bookings (Customer)
+**Route:** `/customer/bookings`
+**Type:** Protected (Customer)
+**Layout:** Tabs + list
+
+**Elements:**
+- Tab bar: **Pending** | **Active** | **Completed** | **Cancelled** — with count badges on Pending and Active
+- Each booking card: Provider photo + name | Service name | Date + time | Amount | Status badge (color-coded: yellow=pending, blue=active, green=completed, grey=cancelled) | "View details" chevron
+- Pull-down refresh button
+- Empty state per tab with relevant icon and CTA
+
+---
+
+#### Screen 14 — Booking Detail (Customer)
+**Route:** `/customer/bookings/[id]`
+**Type:** Protected (Customer)
+**Layout:** Single column
+
+**Elements:**
+- Provider card (tappable → opens provider profile in new tab)
+- **Job details:** Service, scheduled date+time, address, description, amount in escrow
+- **Status timeline:** Four steps with dates — Requested ✓ | Accepted ✓ | In Progress… | Completed ○
+- **Escrow notice:** "₦X is held securely and will be released when you confirm completion"
+- **Action buttons (conditional by status):**
+  - If ACCEPTED/ACTIVE: "Mark as Complete" (primary) + "Raise Dispute" (destructive, outlined)
+  - If COMPLETED: "Leave a Review" (if not yet reviewed)
+  - If CANCELLED: status message only
+- **Review modal** (appears on "Leave a Review" click): 5-star selector + optional comment textarea + Submit
+
+---
+
+#### Screen 15 — Customer Wallet
+**Route:** `/customer/wallet`
+**Type:** Protected (Customer)
+**Layout:** Single column
+
+**Elements:**
+- **Balance hero:** Large ₦X,XXX.XX balance display. Squad account number below it (greyed, with copy icon): "Fund by transferring to: 0123456789 (Wema Bank)"
+- **"Fund Wallet" button:** Opens a bottom sheet modal showing: Account number, Bank name, Account name — with a "Copy account number" button and a QR code (optional)
+- **Transaction history list:** Chronological, newest first. Each row: icon (↑ debit / ↓ credit), description ("Payment to Emeka Electricals"), date, amount (red for debits, green for credits), status badge.
+- Date range filter (This week / This month / Last 3 months)
+
+---
+
+### Provider Screens (10)
+
+---
+
+#### Screen 16 — Provider Dashboard Overview
+**Route:** `/provider`
+**Type:** Protected (Provider)
+**Layout:** Desktop: left sidebar nav + main content. Mobile: bottom nav.
+
+**Sidebar nav items:** Dashboard | Bookings (badge) | Services | Wallet | Analytics | AI Insights | Profile | Settings
+
+**Main content:**
+- **Greeting + date:** "Good morning, Chidi. Here's your business today."
+- **Credit score banner:** Prominent card — Score tier badge (Gold), numerical score (67/100), subtitle "You need 8 more completed jobs to reach Platinum". "View full breakdown" link.
+- **4 KPI cards:** Total Earned (₦) | Jobs Completed | Avg Rating (⭐) | Active Bookings
+- **Monthly earnings chart:** Recharts bar chart — last 6 months, ₦ on Y-axis, month labels on X-axis. Hover tooltip showing exact figure.
+- **Recent bookings list:** Last 5 bookings. Each: customer name, service, date, amount, status badge. "View all" link.
+- **Quick actions:** "Add a service +" | "Edit profile →" | "Withdraw funds →"
+
+---
+
+#### Screen 17 — Provider Bookings
+**Route:** `/provider/bookings`
+**Type:** Protected (Provider)
+**Layout:** Tabs + list
+
+**Elements:**
+- Tab bar: **Pending** (badge count, highlighted) | **Active** | **Completed** | **Cancelled**
+- **Pending cards:** Customer photo + name | Service requested | Requested date+time | Amount | "Accept" button (green) + "Decline" button (outlined red) — inline on the card
+- **Active cards:** Customer name | Service | Date | Amount in escrow | "Mark Complete" button
+- **Completed cards:** Summary view — no action buttons
+- Sort: Pending by newest, Active by scheduled date ascending, Completed by date descending
+- Empty state for each tab
+
+---
+
+#### Screen 18 — Booking Detail (Provider)
+**Route:** `/provider/bookings/[id]`
+**Type:** Protected (Provider)
+**Layout:** Single column
+
+**Elements:**
+- **Customer info card** (visible after acceptance): Name, masked phone (full phone shown when booking is Active), profile photo
+- **Job details:** Service, scheduled date+time, job address, customer's description
+- **Escrow badge:** "₦X held in escrow — released when customer confirms completion"
+- **Status timeline:** Same four-step timeline as customer view
+- **Action buttons (conditional):**
+  - PENDING: "Accept Booking" (primary) + "Decline" (destructive)
+  - ACTIVE: Informational — "Waiting for customer to confirm completion"
+  - COMPLETED: Review received (if any) displayed
+- **Booking reference number** (for support queries)
+
+---
+
+#### Screen 19 — Services Management
+**Route:** `/provider/services`
+**Type:** Protected (Provider)
+**Layout:** List + slide-over drawer
+
+**Elements:**
+- "My Services" heading + "Add New Service +" button (primary, top right)
+- **Service cards:** Name + category tag | Duration | Price | Status toggle (Active / Paused) | Edit icon | Delete icon (disabled if active bookings)
+- Empty state: "You haven't added any services yet. Add one to start getting bookings."
+- **Add/Edit slide-over drawer (right panel on desktop, bottom sheet on mobile):**
+  - Service name (text input)
+  - Category (select — pre-filled from provider's trade)
+  - Price (₦ input)
+  - Duration (number input, minutes)
+  - Description (textarea, optional)
+  - Save button
+
+---
+
+#### Screen 20 — Provider Wallet
+**Route:** `/provider/wallet`
+**Type:** Protected (Provider)
+**Layout:** Single column
+
+**Elements:**
+- **Two balance cards side by side:** "Available: ₦X,XXX" (green) | "Pending / Escrow: ₦X,XXX" (amber — funds held for active bookings)
+- Squad account number with copy button (for receiving transfers)
+- **"Withdraw to Bank" button:** Opens modal:
+  - Bank name dropdown (all Nigerian banks from a static list)
+  - Account number (10-digit input with validation)
+  - Account name (auto-populated via name enquiry — or manual for MVP)
+  - Amount (₦ input, max = available balance)
+  - Confirm button with PIN prompt (or OTP confirmation for security)
+- **Transaction history:** Same as customer wallet view but from provider perspective. Payment received entries show customer name and booking reference.
+
+---
+
+#### Screen 21 — Analytics Dashboard
+**Route:** `/provider/analytics`
+**Type:** Protected (Provider)
+**Layout:** Grid of chart sections
+
+**Section 1 — Revenue Overview:**
+- Date range selector (Last 7 days / Last 30 days / Last 6 months / All time)
+- **Monthly revenue bar chart:** X-axis: months. Y-axis: ₦ earned. Each bar labeled with amount. Recharts.
+- Total for selected period shown above the chart.
+
+**Section 2 — Jobs Overview:**
+- **Number of jobs per month** bar chart (same date range)
+- Completion rate percentage (completed / total accepted)
+
+**Section 3 — Top Services by Revenue:**
+- Horizontal bar chart. Each bar = one service. Width = revenue contribution. Color-coded by category.
+
+**Section 4 — Customer Geography:**
+- Text-based ranked list (no map API needed for MVP): "1. Ikeja — 12 customers | 2. Yaba — 8 customers | 3. Lekki — 6 customers…"
+
+**Section 5 — Performance KPIs:**
+- 4 metric tiles: Completion rate % | Avg response time (hrs) | Repeat customers % | Avg job value (₦)
+
+---
+
+#### Screen 22 — Credit Score Detail
+**Route:** `/provider/score`
+**Type:** Protected (Provider)
+**Layout:** Single column, centered
+
+**Elements:**
+- **Score circle:** Large radial progress circle. Number in center (e.g., 67). Tier badge below (Gold). Animated on load (Framer Motion count-up).
+- **Tier progress bar:** Bronze → Silver → Gold → Platinum. Current position highlighted.
+- **"What this means" callout:** "Your Gold score means you're eligible for priority listing on search results. Reach Platinum to unlock microloan access in phase 2."
+- **4 Factor breakdown cards:**
+  - Jobs completed: X/100 sub-score | Completed X jobs | "Need Y more for next tier"
+  - Total earned: X/100 sub-score | ₦X earned | Progress bar to ₦500k cap
+  - Rating: X/100 sub-score | ⭐X.X average | Based on X reviews
+  - Account tenure: X/100 sub-score | Member X days | Full score at 365 days
+- **Score history line chart:** Recharts. Shows score progression since account creation.
+- Claude-generated narrative paragraph (1–2 sentences explaining score in plain language)
+
+---
+
+#### Screen 23 — AI Business Insights
+**Route:** `/provider/insights`
+**Type:** Protected (Provider)
+**Layout:** Card grid
+
+**Elements:**
+- "Insights for your business" heading + "Last refreshed: X hours ago" + manual refresh button
+- **Insight cards (3–5):** Each card has:
+  - Icon (bulb, chart, location, warning, etc.)
+  - Bold title ("Saturdays are your peak day")
+  - 2–3 sentence explanation grounded in the provider's actual data
+  - "Suggested action" chip (e.g., "Adjust your availability →")
+- **Skeleton loaders:** 3 placeholder cards while Claude generates insights (with loading text: "Analysing your business data…")
+- Refresh interval notice: "Insights update every 24 hours"
+
+---
+
+#### Screen 24 — Edit Profile (Provider)
+**Route:** `/provider/profile`
+**Type:** Protected (Provider)
+**Layout:** Single column form
+
+**Elements:**
+- **Profile photo:** Current photo displayed. "Change photo" button — opens file picker → uploads to Supabase Storage on selection.
+- **Personal info section:** Name (editable) | Phone (read-only, greyed) | State + LGA (dropdowns)
+- **Trade info section:** Trade category (dropdown) | Years of experience | Bio (textarea with counter)
+- **Pricing section:** Min price (₦) | Max price (₦)
+- **Identity section:** NIN (optional, editable)
+- **Availability toggle:** "Currently accepting bookings" on/off switch (updates provider.isAvailable in DB)
+- **"Preview public profile" button** — opens `/providers/[id]` in a new tab
+- **Save changes button** (sticky at bottom or at section level)
+
+---
+
+#### Screen 25 — Settings
+**Route:** `/provider/settings`
+**Type:** Protected (Provider)
+**Layout:** List of setting sections
+
+**Sections:**
+- **Notifications:** Toggle rows — "New booking request (SMS)", "Booking accepted (SMS)", "Payment received (SMS)", "Platform updates (SMS)"
+- **Account:** Phone number (read-only) | Squad account number (read-only, copy button) | "Change linked bank account →"
+- **Legal:** "Privacy Policy →" | "Terms of Service →"
+- **Support:** "Contact support →" (links to WhatsApp or email)
+- **Danger zone:** "Deactivate my account" (opens confirmation modal)
+- **Logout button** (full width, secondary/outlined, at the bottom)
+- App version number (small, greyed, at the very bottom)
+
+---
+
+## 15. Full Folder & File Structure
+
+### Backend
+
+```
+backend/
+├── src/
+│   ├── config/
+│   │   ├── index.js              # exports all config as single object
+│   │   ├── database.js           # Prisma client singleton
+│   │   ├── squad.js              # Squad base URL + keys from env
+│   │   └── ai.js                 # Anthropic key + model name
+│   │
+│   ├── middleware/
+│   │   ├── auth.middleware.js    # JWT verify, attach req.user
+│   │   ├── role.middleware.js    # requireRole('provider'|'customer')
+│   │   ├── rateLimiter.middleware.js
+│   │   ├── validate.middleware.js # Zod body parsing → 400 on fail
+│   │   ├── webhookVerify.middleware.js # Squad HMAC check
+│   │   ├── upload.middleware.js  # multer memory storage
+│   │   └── errorHandler.middleware.js  # global catch-all
+│   │
+│   ├── modules/
+│   │   ├── auth/
+│   │   │   ├── auth.routes.js
+│   │   │   ├── auth.controller.js
+│   │   │   ├── auth.service.js
+│   │   │   └── auth.validator.js
+│   │   ├── users/
+│   │   │   ├── user.routes.js
+│   │   │   ├── user.controller.js
+│   │   │   ├── user.service.js
+│   │   │   └── user.validator.js
+│   │   ├── providers/
+│   │   │   ├── provider.routes.js
+│   │   │   ├── provider.controller.js
+│   │   │   ├── provider.service.js
+│   │   │   └── provider.validator.js
+│   │   ├── services/
+│   │   │   ├── service.routes.js
+│   │   │   ├── service.controller.js
+│   │   │   ├── service.service.js
+│   │   │   └── service.validator.js
+│   │   ├── bookings/
+│   │   │   ├── booking.routes.js
+│   │   │   ├── booking.controller.js
+│   │   │   ├── booking.service.js    # escrow logic lives here
+│   │   │   └── booking.validator.js
+│   │   ├── wallet/
+│   │   │   ├── wallet.routes.js
+│   │   │   ├── wallet.controller.js
+│   │   │   ├── wallet.service.js     # wraps squad client
+│   │   │   └── wallet.validator.js
+│   │   ├── transactions/
+│   │   │   ├── transaction.routes.js
+│   │   │   ├── transaction.controller.js
+│   │   │   ├── transaction.service.js
+│   │   │   └── webhook.handler.js    # Squad webhook receiver
+│   │   ├── reviews/
+│   │   │   ├── review.routes.js
+│   │   │   ├── review.controller.js
+│   │   │   ├── review.service.js
+│   │   │   └── review.validator.js
+│   │   ├── ai/
+│   │   │   ├── ai.routes.js
+│   │   │   ├── ai.controller.js
+│   │   │   ├── matching.service.js   # Claude provider ranking
+│   │   │   ├── scoring.service.js    # credit score computation
+│   │   │   └── insights.service.js  # Claude business tips
+│   │   └── notifications/
+│   │       ├── notification.routes.js
+│   │       ├── notification.controller.js
+│   │       └── notification.service.js
+│   │
+│   ├── integrations/
+│   │   ├── squad/
+│   │   │   ├── squad.client.js          # axios instance + headers
+│   │   │   ├── squad.virtualAccount.js  # createVirtualAccount()
+│   │   │   ├── squad.payment.js         # chargeWallet(), verifyPayment()
+│   │   │   └── squad.transfer.js        # transferToWallet(), transferToBank()
+│   │   ├── claude/
+│   │   │   ├── claude.client.js         # Anthropic SDK instance
+│   │   │   └── claude.prompts.js        # all system prompts as named exports
+│   │   ├── termii/
+│   │   │   └── termii.client.js         # sendOTP(), verifyOTP()
+│   │   └── supabase/
+│   │       └── supabase.storage.js      # uploadFile(), getPublicUrl()
+│   │
+│   ├── db/
+│   │   ├── migrations/                  # auto-generated by Prisma
+│   │   └── seeds/
+│   │       ├── categories.seed.js       # 20 trade categories
+│   │       └── demoProviders.seed.js    # 10 demo providers for demo day
+│   │
+│   ├── utils/
+│   │   ├── response.js      # success(res, data, msg) / error(res, code, msg)
+│   │   ├── logger.js        # Winston instance
+│   │   ├── token.js         # signAccessToken(), signRefreshToken(), verifyToken()
+│   │   ├── crypto.js        # hashValue(), compareHash(), generateOTP()
+│   │   ├── geoHelpers.js    # distance(lat1,lng1,lat2,lng2), boundingBox()
+│   │   └── AppError.js      # custom error class with statusCode
+│   │
+│   ├── jobs/
+│   │   ├── scoreRefresh.job.js     # nightly: recalculate all provider scores
+│   │   ├── escrowTimeout.job.js    # hourly: auto-release bookings > 48h
+│   │   └── index.js               # registers all jobs with node-cron
+│   │
+│   ├── app.js        # Express app setup, middleware, router mounting
+│   └── server.js     # DB connect → start jobs → listen on PORT
+│
+├── prisma/
+│   └── schema.prisma
+├── .env
+├── .env.example
+└── package.json
+```
+
+### Frontend
+
+```
+frontend/
+├── public/
+│   ├── icons/             # PWA icons, favicon
+│   └── images/            # Static brand assets
+│
+├── src/
+│   ├── app/               # Next.js App Router
+│   │   ├── (marketing)/
+│   │   │   ├── layout.jsx          # marketing nav + footer
+│   │   │   └── page.jsx            # Landing page (Screen 01)
+│   │   │
+│   │   ├── (auth)/
+│   │   │   ├── layout.jsx          # centered card layout
+│   │   │   ├── register/
+│   │   │   │   ├── page.jsx        # Role select (Screen 03)
+│   │   │   │   ├── provider/
+│   │   │   │   │   └── page.jsx    # Provider registration (Screen 04)
+│   │   │   │   └── customer/
+│   │   │   │       └── page.jsx    # Customer registration (Screen 05)
+│   │   │   ├── verify-otp/
+│   │   │   │   └── page.jsx        # OTP verification (Screen 06)
+│   │   │   └── login/
+│   │   │       └── page.jsx        # Login (Screen 07)
+│   │   │
+│   │   ├── welcome/
+│   │   │   └── page.jsx            # Onboarding success (Screen 02)
+│   │   │
+│   │   ├── search/
+│   │   │   └── page.jsx            # AI search results (Screen 09)
+│   │   │
+│   │   ├── providers/
+│   │   │   └── [id]/
+│   │   │       └── page.jsx        # Public profile SSR (Screen 10)
+│   │   │
+│   │   ├── (dashboard)/
+│   │   │   ├── layout.jsx          # sidebar + topbar, role-aware
+│   │   │   │
+│   │   │   ├── customer/
+│   │   │   │   ├── page.jsx                    # Customer home (Screen 08)
+│   │   │   │   ├── bookings/
+│   │   │   │   │   ├── page.jsx                # My bookings (Screen 13)
+│   │   │   │   │   └── [id]/
+│   │   │   │   │       └── page.jsx            # Booking detail (Screen 14)
+│   │   │   │   └── wallet/
+│   │   │   │       └── page.jsx                # Customer wallet (Screen 15)
+│   │   │   │
+│   │   │   └── provider/
+│   │   │       ├── page.jsx                    # Dashboard overview (Screen 16)
+│   │   │       ├── bookings/
+│   │   │       │   ├── page.jsx                # Provider bookings (Screen 17)
+│   │   │       │   └── [id]/
+│   │   │       │       └── page.jsx            # Booking detail (Screen 18)
+│   │   │       ├── services/
+│   │   │       │   └── page.jsx                # Services management (Screen 19)
+│   │   │       ├── wallet/
+│   │   │       │   └── page.jsx                # Provider wallet (Screen 20)
+│   │   │       ├── analytics/
+│   │   │       │   └── page.jsx                # Analytics dashboard (Screen 21)
+│   │   │       ├── score/
+│   │   │       │   └── page.jsx                # Credit score detail (Screen 22)
+│   │   │       ├── insights/
+│   │   │       │   └── page.jsx                # AI insights (Screen 23)
+│   │   │       ├── profile/
+│   │   │       │   └── page.jsx                # Edit profile (Screen 24)
+│   │   │       └── settings/
+│   │   │           └── page.jsx                # Settings (Screen 25)
+│   │   │
+│   │   ├── layout.jsx      # root layout — fonts, QueryClient, toast
+│   │   ├── not-found.jsx
+│   │   └── error.jsx
+│   │
+│   ├── components/
+│   │   ├── ui/             # Design system atoms
+│   │   │   ├── Button.jsx
+│   │   │   ├── Input.jsx
+│   │   │   ├── Modal.jsx
+│   │   │   ├── Badge.jsx
+│   │   │   ├── Avatar.jsx
+│   │   │   ├── Card.jsx
+│   │   │   ├── Spinner.jsx
+│   │   │   ├── Toast.jsx
+│   │   │   ├── ScoreBadge.jsx   # tier-colored badge component
+│   │   │   ├── StarRating.jsx
+│   │   │   └── EmptyState.jsx
+│   │   ├── shared/
+│   │   │   ├── Navbar.jsx
+│   │   │   ├── Sidebar.jsx
+│   │   │   ├── Topbar.jsx
+│   │   │   ├── ProviderCard.jsx
+│   │   │   └── BottomNav.jsx
+│   │   ├── auth/
+│   │   │   ├── OTPInput.jsx
+│   │   │   └── RoleCard.jsx
+│   │   ├── provider/
+│   │   │   ├── EarningsChart.jsx
+│   │   │   ├── BookingCard.jsx
+│   │   │   ├── ServiceCard.jsx
+│   │   │   ├── ScoreCircle.jsx
+│   │   │   ├── InsightCard.jsx
+│   │   │   └── TransactionRow.jsx
+│   │   ├── customer/
+│   │   │   ├── BookingForm.jsx
+│   │   │   ├── WalletCard.jsx
+│   │   │   ├── PaymentModal.jsx
+│   │   │   └── ReviewModal.jsx
+│   │   └── search/
+│   │       ├── AISearchBar.jsx
+│   │       ├── SearchFilters.jsx
+│   │       └── SearchResults.jsx
+│   │
+│   ├── hooks/
+│   │   ├── useAuth.js
+│   │   ├── useWallet.js
+│   │   ├── useBookings.js
+│   │   ├── useGeolocation.js
+│   │   └── useToast.js
+│   │
+│   ├── store/
+│   │   ├── authStore.js    # user, token, role, login(), logout()
+│   │   ├── walletStore.js  # balance, accountNumber
+│   │   └── uiStore.js      # sidebar open, active modal
+│   │
+│   ├── services/           # all API call functions
+│   │   ├── api.js          # axios instance, auth interceptor
+│   │   ├── auth.api.js
+│   │   ├── user.api.js
+│   │   ├── provider.api.js
+│   │   ├── booking.api.js
+│   │   ├── wallet.api.js
+│   │   ├── transaction.api.js
+│   │   ├── review.api.js
+│   │   └── ai.api.js
+│   │
+│   ├── lib/
+│   │   ├── utils.js         # cn(), formatCurrency(), formatDate(), truncate()
+│   │   ├── validators.js    # Zod schemas shared between forms
+│   │   └── constants.js     # SERVICE_CATEGORIES, BOOKING_STATUS, BANKS, STATES
+│   │
+│   └── styles/
+│       └── globals.css      # Tailwind directives + CSS variables
+│
+├── middleware.js       # Next.js edge middleware — route guard by role
+├── next.config.js
+├── tailwind.config.js
+├── .env.local
+└── package.json
+```
+
+---
+
+## 16. Dependencies — Complete List
+
+### Backend `package.json`
+
+**Production dependencies:**
+```json
+{
+  "express": "^4.18.0",
+  "cors": "^2.8.5",
+  "helmet": "^7.0.0",
+  "compression": "^1.7.4",
+  "express-rate-limit": "^7.0.0",
+  "express-async-errors": "^3.1.1",
+  "@prisma/client": "^5.0.0",
+  "jsonwebtoken": "^9.0.0",
+  "bcryptjs": "^2.4.3",
+  "zod": "^3.22.0",
+  "axios": "^1.6.0",
+  "@anthropic-ai/sdk": "^0.24.0",
+  "@supabase/supabase-js": "^2.38.0",
+  "multer": "^1.4.5",
+  "node-cron": "^3.0.3",
+  "winston": "^3.11.0",
+  "uuid": "^9.0.0",
+  "dotenv": "^16.3.0"
+}
+```
+
+**Dev dependencies:**
+```json
+{
+  "prisma": "^5.0.0",
+  "nodemon": "^3.0.0",
+  "eslint": "^8.0.0"
+}
+```
+
+### Frontend `package.json`
+
+**Production dependencies:**
+```json
+{
+  "next": "14.2.0",
+  "react": "^18.2.0",
+  "react-dom": "^18.2.0",
+  "tailwindcss": "^3.4.0",
+  "@tailwindcss/forms": "^0.5.7",
+  "clsx": "^2.1.0",
+  "tailwind-merge": "^2.2.0",
+  "zustand": "^4.5.0",
+  "@tanstack/react-query": "^5.17.0",
+  "axios": "^1.6.0",
+  "react-hook-form": "^7.49.0",
+  "zod": "^3.22.0",
+  "@hookform/resolvers": "^3.3.0",
+  "lucide-react": "^0.363.0",
+  "recharts": "^2.10.0",
+  "react-hot-toast": "^2.4.1",
+  "@radix-ui/react-dialog": "^1.0.5",
+  "@radix-ui/react-tabs": "^1.0.4",
+  "@radix-ui/react-select": "^2.0.0",
+  "@radix-ui/react-switch": "^1.0.3",
+  "framer-motion": "^11.0.0",
+  "date-fns": "^3.3.0",
+  "numeral": "^2.0.6",
+  "react-otp-input": "^3.1.1"
+}
+```
+
+**Dev dependencies:**
+```json
+{
+  "eslint": "^8.0.0",
+  "eslint-config-next": "14.2.0",
+  "prettier": "^3.2.0",
+  "autoprefixer": "^10.4.17",
+  "postcss": "^8.4.35"
+}
+```
+
+---
+
+## 17. Infrastructure & Deployment
+
+### Services
+
+| Service | Purpose | Cost |
+|---|---|---|
+| **Supabase** | PostgreSQL DB + File Storage | Free tier: 500MB DB, 1GB storage, 2GB bandwidth |
+| **Render** | Backend hosting | Free tier: 512MB RAM, 0.1 CPU, spins down after 15 min inactivity |
+| **Vercel** | Frontend hosting | Free tier: unlimited deployments, custom domain |
+| **GitHub** | Version control + CI trigger | Free |
+
+### Environment Variables
+
+**Backend `.env`:**
+```
+DATABASE_URL=postgresql://...supabase.co:5432/postgres
+SUPABASE_URL=https://xxx.supabase.co
+SUPABASE_SERVICE_KEY=...
+
+SQUAD_BASE_URL=https://sandbox-api-d.squadco.com
+SQUAD_SECRET_KEY=...
+SQUAD_PUBLIC_KEY=...
+
+ANTHROPIC_API_KEY=sk-ant-...
+
+TERMII_API_KEY=...
+TERMII_BASE_URL=https://api.ng.termii.com
+
+JWT_ACCESS_SECRET=...
+JWT_REFRESH_SECRET=...
+JWT_ACCESS_EXPIRY=15m
+JWT_REFRESH_EXPIRY=30d
+
+FRONTEND_URL=https://your-app.vercel.app
+PORT=3001
+NODE_ENV=production
+```
+
+**Frontend `.env.local`:**
+```
+NEXT_PUBLIC_API_URL=https://your-backend.onrender.com/api
+NEXT_PUBLIC_APP_NAME=SkillBridge
+```
+
+### Deployment Flow
+
+1. Developer pushes to `main` branch on GitHub
+2. Render auto-deploys the backend (`npm start`)
+3. Vercel auto-deploys the frontend (`next build`)
+4. Squad webhook URL is updated to the live Render URL in Squad dashboard
+5. Prisma migrations run via `npx prisma migrate deploy` in the Render build command
+
+### Render Cold Start Note
+
+Render's free tier spins down after 15 minutes of inactivity. For demo day, hit the backend URL once before presenting to warm it up. A simple health check endpoint (`GET /health → 200 OK`) can be used to keep it alive.
+
+---
+
+## 18. Data Flow Diagrams
+
+### User Registration & Wallet Creation
+
+```
+User submits form
+      │
+      ▼
+POST /api/auth/register
+      │
+      ├── Zod validates body
+      ├── Check phone not already registered (Prisma)
+      ├── Create User record (Prisma)
+      ├── Hash and store OTP in memory (TTL: 5 min)
+      ├── Call Termii → send OTP SMS
+      └── Return { message: "OTP sent" }
+
+User submits OTP
+      │
+      ▼
+POST /api/auth/verify-otp
+      │
+      ├── Match OTP against stored hash
+      ├── Mark user.isVerified = true (Prisma)
+      ├── Call Squad createVirtualAccount()
+      ├── Store squadAccountNo + squadAccountRef on User (Prisma)
+      ├── Sign JWT access token + refresh token
+      └── Return { tokens, user, accountNumber }
+```
+
+### Booking Payment Flow
+
+```
+Customer books + pays
+      │
+      ▼
+POST /api/bookings → creates PENDING booking
+      │
+Provider accepts
+      │
+      ▼
+PATCH /api/bookings/:id/accept
+      │
+      ├── booking.service.js calls squad.payment.chargeWallet()
+      ├── Squad charges customer's virtual account
+      ├── Returns squadEscrowRef
+      ├── Saves squadEscrowRef on booking
+      ├── Booking status → ACCEPTED
+      └── Notification sent to customer
+
+Job completed
+      │
+      ▼
+PATCH /api/bookings/:id/complete
+      │
+      ├── booking.service.js calls squad.transfer.transferToWallet()
+      ├── Squad releases funds to provider wallet
+      ├── Booking status → COMPLETED
+      └── Squad fires webhook →
+
+POST /api/webhooks/squad (transfer.success)
+      │
+      ├── HMAC signature verified
+      ├── Transaction record created (Prisma)
+      ├── provider.totalEarned += amount
+      ├── provider.totalJobs += 1
+      ├── scoring.service.computeScore(providerId)
+      ├── provider.creditScore + provider.scoreTier updated
+      ├── CreditScore snapshot saved
+      ├── Notification: "₦X received for [service]"
+      └── Termii SMS to provider
+```
+
+### AI Matching Flow
+
+```
+Customer types query
+      │
+      ▼
+POST /api/ai/match { query, lat, lng, radius }
+      │
+      ├── Search Postgres: providers within radius (lat/lng math)
+      ├── Filter: isAvailable = true, isVerified = true
+      ├── Take top 15 by avgRating
+      ├── Package provider summaries as JSON
+      │
+      ▼
+Call Anthropic Claude API
+  System prompt: matching engine instructions
+  User message: { query, providers: [...] }
+      │
+      ▼
+Claude returns ranked JSON array
+  [{ id, rank, matchReason, confidence }, ...]
+      │
+      ├── Re-fetch full provider data for matched IDs from Postgres
+      ├── Merge matchReason into each provider object
+      └── Return sorted, enriched provider list to frontend
+```
+
+---
+
+## 19. Background Jobs
+
+### Score Refresh Job
+**Schedule:** `0 2 * * *` (every night at 2:00 AM)
+**Logic:**
+1. Fetch all providers where `isActive = true`
+2. For each provider, call `scoring.service.computeScore(providerId)`
+3. Update `provider.creditScore` and `provider.scoreTier` in Postgres
+4. Write a new `CreditScore` snapshot record (for history chart)
+5. Log: "Score refresh complete. X providers updated."
+
+### Escrow Timeout Job
+**Schedule:** `0 * * * *` (every hour on the hour)
+**Logic:**
+1. Find all bookings where `status = ACCEPTED` and `acceptedAt < 48 hours ago`
+2. For each, call `squad.transfer.transferToWallet()` to release funds
+3. Update `booking.status = COMPLETED` and `booking.completedAt = now()`
+4. Run the same post-completion chain: update provider stats, recompute score, send notifications
+5. Log: "Escrow timeout released X bookings"
+
+---
+
+## 20. Economic Viability & Business Model
+
+### Revenue Streams (MVP)
+
+**Platform fee:** 5% on every completed booking. This is deducted before the provider receives their payment. At ₦5,000 average booking value with 1,000 monthly bookings, this generates ₦250,000/month at early scale.
+
+**Why 5% and not more:** Informal workers in Nigeria are price-sensitive. A 5% fee is low enough to not be the reason someone avoids the platform, but aggregated across thousands of bookings it is meaningful. The actual take-rate can be raised as the platform builds dependency.
+
+### Path to 10,000 Users
+
+**Phase 1 (0–500 users) — City seed:** Launch in one LGA of Lagos. Manually onboard 50 providers across 5 categories. Use social media (Instagram, WhatsApp groups) to drive customer sign-ups. Target: ₦500k in GMV in the first month.
+
+**Phase 2 (500–2,000 users) — City expansion:** Expand to 5 LGAs in Lagos. Introduce referral incentives — providers who refer other providers get a ₦1,000 wallet credit. First month free of platform fees for new providers drives supply-side growth.
+
+**Phase 3 (2,000–10,000 users) — Multi-city:** Port to Abuja and Port Harcourt. API agreements with 2 microfinance institutions to offer Platinum-tier providers small working capital loans. This creates a new revenue stream (origination fees from partner lenders) and a retention incentive (providers stay on the platform to maintain their score).
+
+### Unit Economics at 10,000 Users
+
+Assuming 60% providers (6,000) and 40% customers (4,000), and an average provider completing 3 bookings/month at ₦5,000 each:
+
+- Monthly GMV: 6,000 providers × 3 bookings × ₦5,000 = ₦90,000,000
+- Platform revenue (5%): ₦4,500,000/month (~$3,000 USD/month)
+- Infrastructure cost: ~$50/month (Supabase Pro + Render + Vercel)
+- AI cost (Claude API at ~100 requests/day): ~$30/month
+
+The unit economics are strongly positive well before 10,000 users.
+
+---
+
+## 21. Scalability Plan
+
+### From 10,000 to National (1,000,000+ users)
+
+The architecture is designed so that scale is additive, not structural. No rewrites required.
+
+| Layer | MVP | At Scale |
+|---|---|---|
+| Database | Supabase free tier | Supabase Pro → then dedicated Postgres with read replicas |
+| Search | Postgres lat/lng math | Add PostGIS extension (already Postgres-native) → then Elasticsearch |
+| Caching | None | Redis for session cache, wallet balance cache, search result cache |
+| Background jobs | node-cron in Express process | Extract to dedicated worker process (BullMQ + Redis queue) |
+| File storage | Supabase Storage | Supabase Storage scales automatically with CDN |
+| AI cost management | All requests real-time | Cache AI search results for identical queries (Redis, 1hr TTL) |
+| Backend | Single Render instance | Horizontal scaling via Render or migrate to AWS ECS |
+| Monolith → microservices | Modular monolith | Extract Squad/AI/notifications as separate services using existing module boundaries |
+
+### Why the Modular Monolith Enables Scale
+
+Because the backend is structured as independent modules (each with its own routes, controller, service, and integration clients), extracting any module into a separate service requires:
+1. Creating a new Express app
+2. Moving the module folder into it
+3. Replacing direct function calls with HTTP calls or a message queue
+
+No business logic rewrites. This is the key scalability design decision.
+
+---
+
+## 22. MVP Scope — In vs Out
+
+### In Scope (Build for Demo)
+
+- Phone + OTP onboarding via Termii
+- Optional NIN field (stored, not verified live)
+- Provider and customer profile creation
+- Squad virtual account auto-created on registration
+- AI natural language search via Claude with match reasons displayed
+- Service listing management (create, edit, pause, delete)
+- Booking lifecycle (request → accept → complete)
+- Squad escrow: charge on accept, release on complete
+- Transaction history on both wallets
+- Credit score badge computed from behavioral data
+- Score updated via Squad webhook after every completed booking
+- Provider analytics dashboard (revenue, jobs, customer geography, score history)
+- AI business insights generated by Claude
+- Post-job customer reviews
+- Responsive web app (Next.js, mobile-first)
+- Provider public profile page (SSR for SEO)
+- In-app notifications
+
+### Out of Scope (Phase 2)
+
+- Live face scan / biometric verification (Smile Identity)
+- Savings products and ROSCA groups
+- Micro-insurance layer
+- Micro-loan disbursement (score exists; loan product is phase 2)
+- Mobile app (React Native)
+- Redis caching layer
+- Admin dashboard
+- Dispute resolution beyond a "raise dispute" flag
+- Multi-language support (phase 2 for rural expansion)
+
+---
+
+## 23. 4-Day Build Plan
+
+### Day 1 — Backend Foundation
+
+**Morning:**
+- Init Node.js + Express project, install all backend dependencies
+- Set up Supabase project, connect Prisma, write full `schema.prisma`
+- Run `prisma migrate dev` to create all tables
+
+**Afternoon:**
+- Build `auth` module — register, OTP send, OTP verify, JWT issue
+- Build `users` and `providers` modules — CRUD endpoints
+- Wire Squad virtual account creation into auth.service on OTP verify
+
+**Evening:**
+- Seed database with 10 demo providers and 20 service categories
+- Test auth flow end-to-end via Postman
+
+**End of Day 1 deliverables:** User can register, verify OTP, get a JWT, and have a Squad account number assigned.
+
+---
+
+### Day 2 — Core Features: Money + AI
+
+**Morning:**
+- Build `services` module
+- Build `bookings` module — full lifecycle endpoints
+- Wire Squad escrow charge into `booking.accept` and escrow release into `booking.complete`
+
+**Afternoon:**
+- Build `transactions` module + Squad webhook handler with HMAC verification
+- Build `wallet` module — balance fetch, withdrawal
+- Build `reviews` module
+
+**Evening:**
+- Build `ai` module — matching, scoring, insights
+- Test full booking flow via Postman: create → accept → complete → webhook → score update
+
+**End of Day 2 deliverables:** Full payment flow working, AI matching working, credit score updating after payments.
+
+---
+
+### Day 3 — Frontend Build
+
+**Morning:**
+- Init Next.js 14, configure Tailwind, set up Zustand, React Query, Axios instance
+- Build all `ui/` atoms (Button, Input, Badge, Card, ScoreBadge)
+- Build auth pages: landing, role select, registration (both roles), OTP, login
+
+**Afternoon:**
+- Build AI search page — search bar, filter row, result cards with match reasons
+- Build provider public profile page (SSR)
+- Build customer home, bookings list, booking detail, payment confirmation
+
+**Evening:**
+- Build provider dashboard — overview with stats cards and earnings chart
+- Build provider bookings (both tabs)
+
+**End of Day 3 deliverables:** Full customer flow working in the browser. Provider dashboard renders with seeded data.
+
+---
+
+### Day 4 — Polish, Analytics & Deploy
+
+**Morning:**
+- Build provider analytics dashboard — all charts with recharts
+- Build credit score detail page — score circle, factor breakdown
+- Build AI insights page
+
+**Afternoon:**
+- Build wallet screens (both roles), services management, edit profile, settings
+- Test complete end-to-end flow in browser — registration to payment to score update
+- Fix critical bugs
+
+**Evening:**
+- Deploy backend to Render, set all environment variables
+- Deploy frontend to Vercel, set `NEXT_PUBLIC_API_URL`
+- Point Squad sandbox webhooks to live Render URL
+- Run full demo script once through on deployed app
+- Seed 10 convincing demo providers with realistic transaction history
+
+**End of Day 4 deliverables:** Live deployed app, full demo script ready, all judging criteria demonstrated.
+
+---
+
+## Document Notes
+
+This document describes the complete MVP architecture for the SkillBridge platform as submitted for the Squad Hackathon. All Squad API references use the sandbox environment for the demo. Production deployment would switch to Squad's live credentials and add Smile Identity live KYC verification as the first post-hackathon enhancement.
+
+**Architecture designed by:** Engineering Team
+**Last updated:** May 2025
