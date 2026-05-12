@@ -1,36 +1,137 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Hajo
 
-## Getting Started
+A peer-to-peer credit matching and financial coordination platform built with Next.js, Express, and Supabase.
 
-First, run the development server:
+## Quick Start with Docker (Recommended)
+
+The easiest way to run Hajo locally is with Docker and docker-compose:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Copy environment template and populate with your API keys
+cp .env.docker .env
+
+# Start the full stack (frontend + backend + database)
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to see the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**Backend API:** [http://localhost:3001](http://localhost:3001)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+See [docs/docker-deployment-guide.md](docs/docker-deployment-guide.md) for comprehensive Docker documentation, troubleshooting, and production deployment.
+
+## Manual Setup (Without Docker)
+
+### Prerequisites
+- Node.js 20+
+- PostgreSQL 16+
+- npm or yarn
+
+### Backend Setup
+
+```bash
+cd backend
+npm install
+npx prisma migrate dev
+npm run dev
+# Backend runs on http://localhost:3001
+```
+
+### Frontend Setup
+
+```bash
+npm install
+npm run dev
+# Frontend runs on http://localhost:3000
+```
+
+Edit [app/page.tsx](app/page.tsx) to see changes reflected in real-time.
+
+## Documentation
+
+- **[System Design](System_design_nextjs.md)** — Architecture, tech stack, and system overview
+- **[Docker Deployment Guide](docs/docker-deployment-guide.md)** — Local dev, troubleshooting, production deployment
+- **[Design System](docs/design.md)** — UI/UX specifications, component anatomy, tailwind tokens
+- **[Phase Documentation](phases/README.md)** — Development phases, implementation roadmap
+- **[Agent Workflow Rules](AGENTS.md)** — Phase-based development discipline and best practices
+
+## Project Structure
+
+```
+app/                 # Next.js frontend (App Router)
+backend/             # Express API server
+prisma/              # Database schema and migrations
+docs/                # Documentation
+phases/              # Development phases (backend/ and frontend/)
+public/              # Static assets
+```
+
+## Environment Variables
+
+Copy `.env.example` to `.env` and populate with your credentials:
+
+```bash
+cp .env.example .env
+```
+
+Required API keys:
+- `SQUAD_API_KEY` — Financial transaction provider
+- `ANTHROPIC_API_KEY` — Claude AI for provider matching
+- `TERMII_API_KEY` — SMS/OTP provider
+- `SUPABASE_URL` and `SUPABASE_KEY` — Database credentials
+
+## Development Workflow
+
+### Code Standards
+
+Before committing, run linting:
+
+```bash
+npm run lint
+```
+
+### Database Migrations
+
+After schema changes:
+
+```bash
+npx prisma migrate dev --name "your_migration_name"
+```
+
+### Testing
+
+Backend API tests run from TypeScript files in `backend/tests/`:
+
+```bash
+node backend/tests/your-test.ts
+```
+
+## Deployment
+
+### Frontend
+- **Vercel** (recommended) — Auto-deploy from git
+- **Docker** — See docker-compose.yml or frontend/Dockerfile
+
+### Backend
+- **Render** (recommended) — Postgres + Express
+- **Docker** — See backend/Dockerfile
+
+See [phases/backend/phase-4-backend-hardening-deploy.md](phases/backend/phase-4-backend-hardening-deploy.md) and [phases/frontend/phase-4-frontend-polish-deploy.md](phases/frontend/phase-4-frontend-polish-deploy.md) for deployment details.
 
 ## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Supabase Docs](https://supabase.com/docs)
+- [Prisma Docs](https://www.prisma.io/docs)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Contributing
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Follow the phase-based workflow documented in [AGENTS.md](AGENTS.md):
+1. Read the relevant phase doc before implementing
+2. Follow design discipline and testing requirements
+3. Run lint and tests after each feature
+4. Commit per phase with clear messages
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
