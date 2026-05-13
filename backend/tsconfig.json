@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "ignoreDeprecations": "6.0",
+    "allowJs": true,
+    "checkJs": false,
+    "esModuleInterop": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "strict": false,
+    "target": "es2020"
+  },
+  "include": ["src/**/*.js", "tests/**/*.js"]
+}

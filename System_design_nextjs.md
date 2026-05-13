@@ -501,6 +501,30 @@ The mobile client consumes these endpoints directly.
 
 Squad remains the mandatory financial backbone of SkillBridge.
 
+### 10.0 Sandbox Environment (Hackathon)
+
+**IMPORTANT:** This hackathon uses **Squad sandbox environment exclusively.**
+
+- **Sandbox Base URL:** `https://sandbox-api-d.squadco.com`
+- **Dashboard:** `https://sandbox.squadco.com`
+- **Credentials:** Obtain sandbox API keys from the Squad sandbox dashboard
+- **Status:** All features (virtual accounts, OTP, payment collection, webhooks) are fully functional in sandbox
+- **No Production Keys:** Do not use production credentials during the hackathon
+
+**Backend & Frontend `.env` configuration:**
+```env
+SQUAD_SECRET_KEY=your_sandbox_secret_key
+SQUAD_PUBLIC_KEY=your_sandbox_public_key
+SQUAD_API_BASE=https://sandbox-api-d.squadco.com
+SQUAD_ENVIRONMENT=sandbox
+```
+
+When sandbox credentials are provided, the backend automatically switches from mock integrations to real API calls. No code changes needed.
+
+For detailed sandbox setup, test credentials, and webhooks configuration, see [docs/squad-sandbox-research.md](../../docs/squad-sandbox-research.md).
+
+**Production Migration:** After the hackathon, migrating to production requires only updating the API keys and base URL; all code remains the same.
+
 ### 10.1 Virtual Account Creation
 
 After OTP verification, the auth service calls Squad to create a virtual account. The app shows the account number in the wallet and onboarding success screens.
@@ -560,6 +584,15 @@ Scores update in real time after Squad webhook confirmation and again during nig
 ### Passwordless OTP Authentication
 
 The platform uses phone number plus OTP only.
+
+### BVN Verification
+
+Providers (and any users who will receive payouts) must complete BVN verification before being allowed to withdraw funds or receive payouts. BVN verification occurs after OTP verification and before enabling payout features. Phase-1 includes a BVN integration adapter with a mock fallback; Phase-2 will wire the full provider onboarding flow to the BVN verification API.
+
+Key rules:
+- Do not store full BVN numbers in plaintext; store only verification status and a tokenized reference if persistence is required.
+- BVN verification is a synchronous check in the happy path, but the system must tolerate async verification responses from providers.
+- Treat BVN verification failures as a hard stop for payout enablement until the user corrects their details.
 
 ### JWT Strategy for Web
 
