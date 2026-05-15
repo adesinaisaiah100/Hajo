@@ -3,8 +3,8 @@ const rateLimit = require('express-rate-limit');
 const { validate } = require('../../middleware/validate');
 const { requireAuth } = require('../../middleware/auth');
 const { getEnv } = require('../../config/env');
-const { register, login, verifyOtp, refresh, logout, me } = require('./auth.controller');
-const { registerSchema, loginSchema, verifyOtpSchema, refreshSchema } = require('./auth.schemas');
+const { register, login, verifyOtp, refresh, logout, me, verifyTier1, verifyTier2, verifyTier3 } = require('./auth.controller');
+const { registerSchema, loginSchema, verifyOtpSchema, refreshSchema, verifyTier1Schema, verifyTier2Schema, verifyTier3Schema } = require('./auth.schemas');
 
 const router = express.Router();
 const env = getEnv();
@@ -25,6 +25,9 @@ router.post('/login', otpLimiter, validate({ body: loginSchema }), login);
 router.post('/verify-otp', otpLimiter, validate({ body: verifyOtpSchema }), verifyOtp);
 router.post('/refresh', validate({ body: refreshSchema }), refresh);
 router.post('/logout', requireAuth, logout);
+router.post('/verify-tier-1', requireAuth, validate({ body: verifyTier1Schema }), verifyTier1);
+router.post('/verify-tier-2', requireAuth, validate({ body: verifyTier2Schema }), verifyTier2);
+router.post('/verify-tier-3', requireAuth, validate({ body: verifyTier3Schema }), verifyTier3);
 router.get('/me', requireAuth, me);
 
 module.exports = router;

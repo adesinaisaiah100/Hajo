@@ -29,12 +29,18 @@ function createApp() {
   const webhookRoutes = require('./routes/webhooks.routes');
   const reviewRoutes = require('./routes/reviews.routes');
   const transactionRoutes = require('./routes/transactions.routes');
+  const quotationRoutes = require('./routes/quotations.routes');
+  const analyticsRoutes = require('./routes/analytics.routes');
+  const aiRoutes = require('./routes/ai.routes');
 
   app.use('/api/auth', authRoutes);
   app.use('/api/bookings', bookingRoutes);
   app.use('/api/webhooks', webhookRoutes);
   app.use('/api/reviews', reviewRoutes);
   app.use('/api/transactions', transactionRoutes);
+  app.use('/api/quotations', quotationRoutes);
+  app.use('/api/analytics', analyticsRoutes);
+  app.use('/api/ai', aiRoutes);
 
   app.use(notFound);
   app.use(errorHandler);

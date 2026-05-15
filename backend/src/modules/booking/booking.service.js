@@ -42,13 +42,50 @@ async function createBooking({ customerId, providerId, serviceId, amount, curren
     metadata: payment
   });
 
+  // Phase 3.5: Trigger quotation generation asynchronously
+  try {
+    const quotationService = require('../quotations/quotation.service');
+    const service = await prisma.service.findUnique({ where: { id: serviceId } });
+    const customer = await prisma.user.findUnique({ where: { id: customerId } });
+    
+    if (service && customer) {
+      await quotationService.generateDraft(
+        booking.id,
+        {
+          firstName: customer.firstName,
+          lastName: customer.lastName,
+          city: customer.city,
+        },
+        {
+          title: service.title,
+          description: service.description,
+          priceFrom: service.price,
+          priceTo: service.price,
+        }
+      );
+      console.log(`[Booking] Quotation generated for booking ${booking.id}`);
+    }
+  } catch (error) {
+    console.error(`[Booking] Failed to generate quotation for booking ${booking.id}:`, error.message);
+    // Don't fail the booking if quotation generation fails
+  }
+
   return { booking, transaction: trx, checkout: payment.checkout_url || null };
 }
 
 // Provider accepts booking (charges escrow)
 async function acceptBooking(bookingId, providerId) {
-  const booking = await prisma.booking.findUnique({ where: { id: bookingId } });
+  const booking = await prisma.booking.findUnique({ 
+    where: { id: bookingId },
+    include: { quotation: true }
+  });
   if (!booking || booking.providerId !== providerId) throw new Error('Booking not found or unauthorized');
+  
+  // If quotation exists, it must be accepted via quotationService.acceptQuotation by the customer
+  if (booking.quotation) {
+    throw new Error('This booking requires a quotation. It must be accepted by the customer.');
+  }
+
   if (booking.status !== 'PENDING') throw new Error('Booking cannot be accepted in current state');
 
   const chargeRef = `sb_accept_${bookingId}`;
@@ -83,10 +120,23 @@ async function acceptBooking(bookingId, providerId) {
 
 // Complete booking (release escrow to provider)
 async function completeBooking(bookingId, customerId) {
-  const booking = await prisma.booking.findUnique({ where: { id: bookingId } });
+  const booking = await prisma.booking.findUnique({ 
+    where: { id: bookingId },
+    include: { quotation: true }
+  });
   if (!booking || booking.customerId !== customerId) throw new Error('Booking not found or unauthorized');
   if (booking.status !== 'ACCEPTED') throw new Error('Booking must be accepted before completion');
 
+  // Handle Quotation-based completion (Split Escrow)
+  if (booking.quotation) {
+    const quotationService = require('../quotations/quotation.service');
+    await quotationService.releaseLaborEscrow(booking.quotation.id);
+    
+    // Status update is handled by releaseLaborEscrow or handleLabourEscrowRelease
+    return findBookingById(bookingId);
+  }
+
+  // Handle standard booking completion
   const transferRef = `sb_release_${bookingId}`;
   const provider = await prisma.provider.findUnique({ where: { userId: booking.providerId } });
 

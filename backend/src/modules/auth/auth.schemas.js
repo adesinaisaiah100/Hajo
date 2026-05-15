@@ -33,10 +33,34 @@ const refreshSchema = z.object({
   refreshToken: z.string().optional()
 });
 
+const verifyTier1Schema = z.object({
+  firstName: z.string().min(1),
+  lastName: z.string().min(1),
+  email: z.string().email(),
+});
+
+const verifyTier2Schema = z.object({
+  nin: z.string().min(11).max(11),
+  bvn: z.string().min(11).max(11),
+  city: z.string().min(1),
+  state: z.string().min(1),
+  nextOfKinName: z.string().min(1),
+  nextOfKinPhone: z.string().min(6),
+  nextOfKinRelation: z.string().min(1),
+});
+
+const verifyTier3Schema = z.object({
+  faceScanData: z.string().min(1),
+  fingerprintData: z.string().min(1),
+});
+
 module.exports = {
   roleSchema,
   registerSchema,
   loginSchema,
   verifyOtpSchema,
-  refreshSchema
+  refreshSchema,
+  verifyTier1Schema,
+  verifyTier2Schema,
+  verifyTier3Schema
 };

@@ -54,7 +54,64 @@ async function handleSquadEvent(event) {
 
   console.log(`[Squad Webhook] Processed event ${event_type} for ${transactionRef}, status: ${internalStatus}`);
 
+  // Phase 3.5: Handle labour escrow release on transfer success
+  const isTransferSuccess = internalStatus === 'SUCCESS' && (event_type === 'transfer.success' || event_type === 'payout.success');
+  const isLabourRef = /LAB|labour/i.test(transactionRef);
+
+  if (isTransferSuccess && isLabourRef) {
+    try {
+      await handleLabourEscrowRelease(event, trx);
+    } catch (error) {
+      console.error('[Squad Webhook] Failed to process labour escrow release:', error.message);
+    }
+  }
+
   return trx;
+}
+
+/**
+ * Phase 3.5: Handle labour escrow release
+ * Called when Squad webhook indicates labour portion transfer was successful
+ */
+async function handleLabourEscrowRelease(event, transaction) {
+  const { data } = event || {};
+  
+  // Find booking and quotation associated with this transfer
+  const quotation = await prisma.quotation.findFirst({
+    where: {
+      squadLabourRef: data?.transaction_ref || data?.reference,
+    },
+    include: { booking: true },
+  });
+
+  if (!quotation || !quotation.booking) {
+    console.log('[Squad Webhook] No quotation found for labour release, skipping');
+    return;
+  }
+
+  // Mark labour as released in quotation
+  await prisma.quotation.update({
+    where: { id: quotation.id },
+    data: {
+      status: 'COMPLETED',
+      labourReleasedAt: new Date(),
+    },
+  });
+
+  // Update booking to COMPLETED if not already
+  if (quotation.booking.status !== 'COMPLETED') {
+    await prisma.booking.update({
+      where: { id: quotation.booking.id },
+      data: {
+        status: 'COMPLETED',
+        completedAt: new Date(),
+      },
+    });
+  }
+
+  console.log(
+    `[Squad Webhook] Labour escrow released for quotation ${quotation.id}, booking ${quotation.booking.id}`
+  );
 }
 
 module.exports = {

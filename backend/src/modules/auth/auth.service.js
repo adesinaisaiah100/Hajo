@@ -31,11 +31,17 @@ function mapUser(user) {
     lastName: user.lastName,
     role: user.role,
     isVerified: user.isVerified,
+    verificationTier: user.verificationTier,
     city: user.city,
     state: user.state,
     country: user.country,
     squadAccountNo: user.squadAccountNo,
     squadAccountRef: user.squadAccountRef,
+    nin: user.nin,
+    bvn: user.bvn,
+    nextOfKinName: user.nextOfKinName,
+    nextOfKinPhone: user.nextOfKinPhone,
+    nextOfKinRelation: user.nextOfKinRelation,
     tokenVersion: user.tokenVersion,
     provider: user.provider
       ? {
@@ -116,6 +122,14 @@ function createAuthService({ prisma = getPrismaClient() } = {}) {
 
   async function persistVirtualAccount(user) {
     if (user.squadAccountNo) {
+      // If already has account, ensure at least TIER_1
+      if (user.verificationTier === 'TIER_0') {
+        return prisma.user.update({
+          where: { id: user.id },
+          data: { verificationTier: 'TIER_1' },
+          include: { provider: true }
+        });
+      }
       return user;
     }
 
@@ -125,10 +139,59 @@ function createAuthService({ prisma = getPrismaClient() } = {}) {
       where: { id: user.id },
       data: {
         squadAccountNo: virtualAccount.accountNumber,
-        squadAccountRef: virtualAccount.reference
+        squadAccountRef: virtualAccount.reference,
+        verificationTier: 'TIER_1'
       },
       include: { provider: true }
     });
+  }
+
+  async function verifyTier1(userId, payload) {
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+        email: payload.email,
+        isVerified: true
+      },
+      include: { provider: true }
+    });
+
+    return persistVirtualAccount(user);
+  }
+
+  async function verifyTier2(userId, payload) {
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        nin: payload.nin,
+        bvn: payload.bvn,
+        city: payload.city,
+        state: payload.state,
+        nextOfKinName: payload.nextOfKinName,
+        nextOfKinPhone: payload.nextOfKinPhone,
+        nextOfKinRelation: payload.nextOfKinRelation,
+        verificationTier: 'TIER_2'
+      },
+      include: { provider: true }
+    });
+
+    return mapUser(user);
+  }
+
+  async function verifyTier3(userId, payload) {
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        faceScanData: payload.faceScanData,
+        fingerprintData: payload.fingerprintData,
+        verificationTier: 'TIER_3'
+      },
+      include: { provider: true }
+    });
+
+    return mapUser(user);
   }
 
   async function sendVerificationOtp(payload) {
@@ -143,6 +206,7 @@ function createAuthService({ prisma = getPrismaClient() } = {}) {
       phone,
       otpDelivered: true,
       otpExpiresInSeconds: env.OTP_TTL_SECONDS,
+      otp: !env.TERMII_API_KEY ? otp : undefined, // Return OTP for toast if no real provider
       debugOtp: env.NODE_ENV === 'test' ? otp : undefined
     };
   }
@@ -171,8 +235,8 @@ function createAuthService({ prisma = getPrismaClient() } = {}) {
       : await prisma.user.create({
           data: {
             phone,
-            firstName: payload.firstName,
-            lastName: payload.lastName,
+            firstName: payload.firstName || 'User',
+            lastName: payload.lastName || 'Pending',
             email: payload.email || null,
             role: payload.role,
             city: payload.city || null,
@@ -237,10 +301,8 @@ function createAuthService({ prisma = getPrismaClient() } = {}) {
       include: { provider: true }
     });
 
-    const userWithWallet = await persistVirtualAccount(verifiedUser);
-    const refreshToken = signRefreshToken(userWithWallet);
-
-    return mapAuthResponse(userWithWallet, refreshToken);
+    const refreshToken = signRefreshToken(verifiedUser);
+    return mapAuthResponse(verifiedUser, refreshToken);
   }
 
   async function refresh(refreshToken) {
@@ -306,6 +368,9 @@ function createAuthService({ prisma = getPrismaClient() } = {}) {
     sendVerificationOtp,
     ensureProviderProfile,
     persistVirtualAccount,
+    verifyTier1,
+    verifyTier2,
+    verifyTier3,
     mapUser
   };
 }

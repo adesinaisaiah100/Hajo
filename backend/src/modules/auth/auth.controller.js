@@ -84,11 +84,44 @@ async function me(req, res, next) {
   }
 }
 
+async function verifyTier1(req, res, next) {
+  try {
+    const userId = req.user.id;
+    const user = await authService.verifyTier1(userId, req.body);
+    return res.status(200).json({ success: true, data: user });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+async function verifyTier2(req, res, next) {
+  try {
+    const userId = req.user.id;
+    const user = await authService.verifyTier2(userId, req.body);
+    return res.status(200).json({ success: true, data: user });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+async function verifyTier3(req, res, next) {
+  try {
+    const userId = req.user.id;
+    const user = await authService.verifyTier3(userId, req.body);
+    return res.status(200).json({ success: true, data: user });
+  } catch (error) {
+    return next(error);
+  }
+}
+
 module.exports = {
   register,
   login,
   verifyOtp,
   refresh,
   logout,
-  me
+  me,
+  verifyTier1,
+  verifyTier2,
+  verifyTier3
 };

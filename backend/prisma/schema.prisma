@@ -15,9 +15,30 @@ enum UserRole {
 
 enum BookingStatus {
   PENDING
+  QUOTE_REQUESTED
+  QUOTE_SENT
+  NEGOTIATING
   ACCEPTED
+  ACTIVE
   COMPLETED
   CANCELLED
+  DISPUTED
+  REVIEW_PENDING
+}
+
+enum QuotationStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  NEGOTIATING
+  COMPLETED
+  CANCELLED
+}
+
+enum MessageSender {
+  ARTISAN
+  CUSTOMER
 }
 
 enum TransactionType {
@@ -48,6 +69,13 @@ enum ScoreTier {
   PLATINUM
 }
 
+enum VerificationTier {
+  TIER_0
+  TIER_1
+  TIER_2
+  TIER_3
+}
+
 model User {
   id                String         @id @default(cuid())
   phone             String         @unique
@@ -56,12 +84,20 @@ model User {
   lastName          String
   role              UserRole
   isVerified        Boolean        @default(false)
+  verificationTier  VerificationTier @default(TIER_0)
   avatarUrl         String?
   city              String?
   state             String?
   country           String         @default("Nigeria")
   squadAccountNo    String?
   squadAccountRef   String?
+  nin               String?
+  bvn               String?
+  nextOfKinName     String?
+  nextOfKinPhone    String?
+  nextOfKinRelation String?
+  faceScanData      String?
+  fingerprintData   String?
   tokenVersion      Int            @default(0)
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
@@ -73,6 +109,7 @@ model User {
   reviewsGiven      Review[]       @relation("ReviewsGiven")
   reviewsReceived   Review[]       @relation("ReviewsReceived")
   creditScores      CreditScore[]
+  scoreSnapshots    ScoreSnapshot[]
 }
 
 model Provider {
@@ -96,6 +133,7 @@ model Provider {
   services        Service[]
   reviews         Review[]
   creditScores    CreditScore[]
+  scoreSnapshots  ScoreSnapshot[]
 }
 
 model Service {
@@ -135,10 +173,57 @@ model Booking {
   service        Service        @relation(fields: [serviceId], references: [id], onDelete: Cascade)
   transactions   Transaction[]
   reviews        Review[]
+  quotation      Quotation?
 
   @@index([customerId])
   @@index([providerId])
   @@index([status])
+}
+
+model Quotation {
+  id                    String                 @id @default(cuid())
+  bookingId             String                 @unique
+  booking               Booking                @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  draftMaterialsCost    Decimal                @db.Decimal(14, 2)
+  draftLabourCost       Decimal                @db.Decimal(14, 2)
+  draftDescription      String                 @db.Text
+  draftGeneratedAt      DateTime               @default(now())
+  
+  finalMaterialsCost    Decimal?               @db.Decimal(14, 2)
+  finalLabourCost       Decimal?               @db.Decimal(14, 2)
+  finalDescription      String?                @db.Text
+  sentAt                DateTime?
+  
+  status                QuotationStatus        @default(DRAFT)
+  acceptedAt            DateTime?
+  
+  squadMaterialsRef     String?
+  squadLabourRef        String?
+  materialsReleasedAt   DateTime?
+  labourReleasedAt      DateTime?
+  
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  
+  messages              NegotiationMessage[]
+  
+  @@index([bookingId])
+  @@index([status])
+}
+
+model NegotiationMessage {
+  id                 String                 @id @default(cuid())
+  quotationId        String
+  quotation          Quotation              @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  
+  sender             MessageSender
+  message            String                 @db.Text
+  suggestedCost      Decimal?               @db.Decimal(14, 2)
+  createdAt          DateTime               @default(now())
+  
+  @@index([quotationId])
+  @@index([createdAt])
 }
 
 model Transaction {
@@ -163,6 +248,9 @@ model Transaction {
   @@index([bookingId])
   @@index([type])
   @@index([status])
+  @@index([createdAt])
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
 }
 
 model Review {
@@ -190,7 +278,7 @@ model Review {
 model CreditScore {
   id            String    @id @default(cuid())
   userId        String
-  providerId    String?
+  providerId    String?   @unique
   score         Int
   tier          ScoreTier
   jobsScore     Int
@@ -208,4 +296,27 @@ model CreditScore {
   @@index([userId])
   @@index([providerId])
   @@index([tier])
+}
+
+model ScoreSnapshot {
+  id            String    @id @default(cuid())
+  userId        String
+  providerId    String?
+  score         Int
+  tier          ScoreTier
+  jobsScore     Int
+  earningsScore Int
+  ratingScore   Int
+  tenureScore   Int
+  narrative     String?
+  calculatedAt  DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider      Provider? @relation(fields: [providerId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([providerId])
+  @@index([createdAt])
 }

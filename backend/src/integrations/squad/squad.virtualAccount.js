@@ -22,11 +22,15 @@ async function createVirtualAccount(user) {
     return buildMockVirtualAccount(user);
   }
 
+  // Refined payload based on Squad API Guide for Virtual Accounts
   const response = await client.post('/virtual-account', {
     customer_identifier: user.id,
     display_name: `${user.firstName} ${user.lastName}`.trim(),
+    first_name: user.firstName,
+    last_name: user.lastName,
     mobile_num: user.phone,
-    email: user.email || undefined
+    email: user.email || `${user.phone}@hajo.ng`,
+    benefit_type: 'NUBAN', // Standard for Nigerian virtual accounts
   });
 
   const payload = response.data?.data || response.data || {};
@@ -34,7 +38,7 @@ async function createVirtualAccount(user) {
   return {
     accountName: payload.account_name || `${user.firstName} ${user.lastName}`.trim(),
     accountNumber: payload.account_no || payload.accountNumber || null,
-    bankName: payload.bank_name || payload.bankName || 'Squad',
+    bankName: payload.bank_name || payload.bankName || 'GTBank',
     reference: payload.reference || payload.account_reference || `squad-${user.id}`,
     raw: payload
   };
