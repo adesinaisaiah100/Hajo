@@ -154,3 +154,22 @@ This is the formula that turns behavior into a score tier.
 - Webhook replay protection should be reviewed carefully
 - Score calculations must stay deterministic
 - Search results should remain fast even when Claude is slow
+
+## Implementation update
+
+### Frontend progress completed
+
+- Added the Phase 2 marketplace routes in `frontend/app` for search, provider profile, customer bookings, customer booking detail, customer booking creation, customer wallet, provider bookings, and provider wallet.
+- Added a reusable responsive dashboard shell for `/customer/*` and `/provider/*` routes so the money and booking flows already sit in the intended application frame.
+- Added shared marketplace components for providers, bookings, payment summaries, score badges, transaction lists, skeleton states, and empty states.
+- Added React Query hooks and service wrappers for search, bookings, wallet state, and provider profile loading.
+- Added a seeded marketplace data layer so the frontend remains interactive while the backend still lacks public provider routes and wallet-specific endpoints.
+- Cleaned up the global frontend visual system to align more closely with `docs/design.md`, especially by removing unnecessary gradients from the shared foundation and keeping the UI lighter and more functional.
+
+### Current contract note
+
+The frontend is prepared to consume the Phase 2 backend, but it currently falls back in a few places because the active backend in this repository does not yet expose all of the routes listed in this phase document. Today:
+
+- booking create, accept, complete, cancel actions attempt the backend endpoints first
+- transaction summary is consumed for wallet history when available
+- public provider profile, provider search, and booking list/detail screens use a local fallback layer until those endpoints are available

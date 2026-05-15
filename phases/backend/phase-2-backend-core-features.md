@@ -47,3 +47,16 @@ if (exists) return; // already processed
 - Ensure webhook signature verification is correct and logs raw payloads for debugging
 - Introduce a retry/backoff strategy for Squad API calls
 - Add reconciliation tools for transaction mismatches
+
+## Extension: Phase 3.5 - Quotation System
+
+**Note:** Phase 3.5 (Quotation System & Split Escrow) builds directly on top of Phase 2 bookings. When implemented, it introduces:
+- A new `Quotation` model tied to each booking
+- Extended `BookingStatus` enum with `QUOTE_REQUESTED`, `QUOTE_SENT`, `NEGOTIATING`, `ACCEPTED` statuses
+- A `NegotiationMessage` model for customer-artisan communication
+- Split escrow logic: materials released on quotation acceptance, labour held until completion
+- Gemini-powered draft quotation generation
+
+The booking lifecycle in Phase 2 becomes: `PENDING` → (Phase 3.5: quotation draft/send/accept) → `ACTIVE` → `COMPLETED`.
+
+See `phases/backend/phase-3.5-quotation-split-escrow-plan.md` for the full quotation implementation plan.

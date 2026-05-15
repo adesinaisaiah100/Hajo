@@ -1,69 +1,55 @@
-# Frontend Phase 4 - Polish, Accessibility & Deploy
+# Phase 4 - Polish, Accessibility & Deploy
 
 **Phase reference:** Frontend Phase 4
 **Scope:** Visual polish, accessibility, responsive tweaks, performance improvements, deploy readiness and final QA.
 
-## Goal
-Ensure the frontend is visually polished, accessible, and stable for deployment and demo.
+## Goal summary
+Ensure the frontend is visually polished, accessible, and stable for deployment and demo. Specifically, implement the remaining provider tools focused on scores, insights, settings, and profile management, aligning strictly with the light UI theme. In addition, finalize mobile optimization by removing "AI slop" gradients from the landing and onboarding pages, and introduce a global custom toast notification system.
 
-## Deliverables
-- `app/(provider)/score/page.tsx` — score detail UI
-- `app/(provider)/insights/page.tsx` — AI insights UI
-- `app/(provider)/settings/page.tsx` — settings screens
-- Finalized `src/components/ui/*` with accessible primitives
-- Tailwind configuration with brand tokens and animations
-- Lighthouse performance and accessibility checks
+## Frontend
+The credit score detail view (`app/(dashboard)/provider/score/page.tsx`) displays the provider's score, breakdown factors, and AI-driven recommendations. The AI Business Insights page (`app/(dashboard)/provider/insights/page.tsx`) surfaces actionable, data-driven tips via cards. The profile settings (`app/(dashboard)/provider/profile/page.tsx`) and account settings (`app/(dashboard)/provider/settings/page.tsx`) provide forms for updating business details, notifications, and identity.
 
-## Important snippets
+Mobile UI Overhaul: The landing page (`app/(marketing)/page.tsx`) and Auth Shell (`app/components/shared/AuthPanel.tsx`) were strictly refactored to eliminate unnecessary background gradients. Typography sizing (`text-5xl` down to `text-3xl`/`4xl` on mobile) and padding (`p-12` to `p-6`) were adjusted to provide an optimal, distraction-free mobile browsing experience.
+A global custom toast notification system was created (`app/store/toast.store.ts` & `app/components/ui/ToastProvider.tsx`) utilizing Zustand, allowing the frontend to present backend notifications clearly on both mobile and desktop.
+
+## Backend
+The frontend connects (or is architected to connect) with the backend `scoring.service.ts` for credit score calculations and `insights.service.ts` for AI business tips via Gemini. The toast system captures and displays errors or success messages originating from backend interactions.
+
+## File register
+
+| File | Change Type | Why It Matters |
+|---|---|---|
+| `frontend/app/(dashboard)/provider/score/page.tsx` | Added | Visualizes the credit score breakdown and AI recommendations |
+| `frontend/app/(dashboard)/provider/insights/page.tsx` | Added | Displays dynamic business insights based on booking history |
+| `frontend/app/(dashboard)/provider/profile/page.tsx` | Added | Enables editing of personal info, trade details, and pricing |
+| `frontend/app/(dashboard)/provider/settings/page.tsx` | Added | Handles account notifications, security, and legal links |
+| `frontend/Dockerfile` | Added | Multi-stage build for Next.js (optimization for production) |
+| `docker-compose.yml` | Added | Full-stack orchestration (frontend + backend + postgres) |
+| `.env.docker` | Added | Environment template for Docker containers |
+| `frontend/app/(marketing)/page.tsx` | Updated | Landing page mobile responsiveness improved and gradients removed |
+| `frontend/app/components/shared/AuthPanel.tsx` | Updated | Auth wrapper cleaned up for mobile readability |
+| `frontend/app/store/toast.store.ts` | Added | Zustand store to manage global toast notification state |
+| `frontend/app/components/ui/ToastProvider.tsx` | Added | Renders toast notifications with slide-in animation |
+| `frontend/app/providers.tsx` | Updated | Injects ToastProvider into the app layout |
+
+## Important code snippets
+
+### Custom Toast Notification Store
+File: `frontend/app/store/toast.store.ts`
+```typescript
+export const toast = {
+  success: (title: string, description?: string) =>
+    useToastStore.getState().addToast({ title, description, type: "success" }),
+  error: (title: string, description?: string) =>
+    useToastStore.getState().addToast({ title, description, type: "error" }),
+};
+```
+This enables simple notification calls (`toast.success("Saved!")`) from any component without prop drilling.
 
 ### Focus ring standard (global CSS)
 ```css
 :focus { outline: none; box-shadow: 0 0 0 3px rgba(20,184,166,0.15); }
 ```
-
-## Verification checklist
-- Axe/Lighthouse accessibility score acceptable (>90 where possible)
-- Responsive checks at common device sizes
-- Visual polish consistent across route groups
-- Deployment preview on Vercel matches local build
-
-## Docker Deployment
-
-**Goal:** Enable developers and end-users to run Hajo frontend in a containerized environment alongside the backend.
-
-### Files Created
-
-- `frontend/Dockerfile` — Multi-stage build for Next.js (optimization for production)
-- `docker-compose.yml` — Full-stack orchestration (frontend + backend + postgres)
-- `.env.docker` — Environment template for Docker containers
-- `docs/docker-deployment-guide.md` — Comprehensive Docker runbook
-
-### Docker Strategy
-
-**For Local Development:**
-
-Developers run the full stack using docker-compose without environment setup conflicts:
-
-```bash
-docker-compose up -d
-```
-
-This starts:
-- PostgreSQL (Supabase replica for local testing)
-- Express backend (port 3001) with hot-reload
-- Next.js frontend (port 3000) with hot-reload on `app/` and `src/` changes
-
-The frontend automatically connects to the backend at `http://localhost:3001` via `NEXT_PUBLIC_API_URL` environment variable.
-
-**For Production Deployment:**
-
-Frontend image is built as an optimized static+SSR artifact that can be:
-- Pushed to a container registry
-- Deployed to Kubernetes or container platforms
-- Run on any machine with Docker installed
-- Served behind a reverse proxy (nginx, Cloudflare, etc.)
-
-### Important snippets
 
 ### Multi-stage Dockerfile for Next.js
 ```dockerfile
@@ -88,67 +74,23 @@ HEALTHCHECK --interval=10s CMD curl -f http://localhost:3000/
 CMD ["npm", "start"]
 ```
 
-### docker-compose.yml (Frontend service)
-```yaml
-frontend:
-  build:
-    context: ./
-    dockerfile: frontend/Dockerfile
-  environment:
-    NODE_ENV: development
-    NEXT_PUBLIC_API_URL: http://localhost:3001
-  ports:
-    - "3000:3000"
-  depends_on:
-    backend:
-      condition: service_healthy
-  volumes:
-    - ./app:/app/app        # Hot-reload
-    - ./src:/app/src        # Hot-reload
-  healthcheck:
-    test: ["CMD", "curl", "-f", "http://localhost:3000/"]
-    interval: 10s
-    retries: 5
-```
-
-### Quick Reference
-
-**Start local stack:**
-```bash
-cp .env.docker .env
-docker-compose up -d
-```
-
-**View logs:**
-```bash
-docker-compose logs -f frontend
-```
-
-**Access frontend:**
-```bash
-# Browser: http://localhost:3000
-curl http://localhost:3000
-```
-
-**Build production image:**
-```bash
-docker build -f frontend/Dockerfile -t hajo-frontend:latest .
-```
-
-See `docs/docker-deployment-guide.md` for comprehensive Docker documentation, including troubleshooting, production deployment, and multi-environment setup.
+## Implementation notes
+- Maintained strict adherence to the light design system (`docs/design.md`) focusing on clear typographic hierarchies, `#111827` dark grays for headings, and `#14b8a6` teal for primary actions.
+- Eliminated colorful placeholder gradients from the marketing and auth screens to meet professional UI standards and provide a crisp layout.
+- Designed the `ToastProvider` to span full-width on mobile while remaining fixed to the bottom-right on desktop, utilizing standard CSS keyframe animations for entry instead of relying on heavy third-party libraries.
+- All new pages follow responsive `grid` layouts transitioning seamlessly from single-column on mobile to 2/3 column on desktop.
+- Used `Lucide` icons consistently across all settings and insights pages.
 
 ## Verification checklist
-- Axe/Lighthouse accessibility score acceptable (>90 where possible)
-- Responsive checks at common device sizes
-- Visual polish consistent across route groups
-- Deployment preview on Vercel matches local build
-- Frontend service starts in docker-compose and responds to health check
-- Environment variables are correctly injected from docker-compose.yml
-- Hot-reload works for `app/` and `src/` directory changes
-- Production build completes without errors and optimizes assets
+- [x] Credit score page accurately renders the visual breakdown.
+- [x] Insights page presents actionable AI business tips.
+- [x] Profile management supports full CRUD UI logic.
+- [x] Settings page covers notifications and support flows.
+- [x] Responsive checks confirm perfect readability on mobile viewports for landing and auth.
+- [x] Toasts correctly populate, slide in, and dismiss after 5 seconds.
+- [x] Visual polish consistent across route groups.
 
-## Risks & follow-ups
-- Address any color-contrast violations before demo day
-- Audit keyboard navigation across modals and drawers
-- Monitor frontend bundle size in production image builds
-- Set up automated image builds and pushes to registry via CI/CD
+## Risks and follow-up notes
+- Verify Axe/Lighthouse accessibility scores locally and address any color-contrast violations.
+- Audit keyboard navigation across the new setting toggle switches.
+- Finalize the wireup for settings mutations when the backend exposes PUT/PATCH endpoints for user preferences.

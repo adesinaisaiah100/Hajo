@@ -16,9 +16,14 @@ The application is structurally divided into three distinct layout zones, manage
 
 ### B. Auth Layout (`(auth)/layout.tsx`)
 
-* **Anatomy:** 100vh / 100vw container. `bg-gray-50`.
+* **Anatomy:** 100vh / 100vw container. Clean light background `bg-white`.
 * **Content Placement:** Absolute center using `flex items-center justify-center`.
-* **Card Specifications:** Max-width of `420px`. The card itself has `shadow-xl`, `rounded-2xl`, and padding of `p-8` (32px).
+* **Card Specifications:** Two-column layout on desktop. Left side: Hero content with light teal accent (`bg-gradient-to-br from-blue-50 to-white`). Right side: Auth form card with `shadow-sm`, `rounded-2xl`, and padding of `p-8` (32px).
+* **Color Palette (Light Theme):** 
+  * Background: `#ffffff` (white)
+  * Accent panels: `#f0fdfa` to `#ffffff` gradients
+  * Text: `#111827` (dark gray)
+  * Borders: `#e5e7eb` (light gray)
 
 ### C. Application Dashboard Layout (`(dashboard)/layout.tsx`)
 
@@ -143,9 +148,57 @@ Every list, table, or dashboard section must have a designed empty state.
 
 ---
 
-## 4. Frontend Engineering Variables (Tailwind Setup)
+## 4. Light Theme Color System
 
-These exact configurations must be added to `tailwind.config.js` to ensure the design system is mathematically sound.
+**SkillBridge uses a modern light-first design system** with clean whites, soft accents, and accessible contrast ratios.
+
+### Core Light Theme Palette
+
+| Element | Color | Usage |
+|---|---|---|
+| **Background (Primary)** | `#ffffff` | Page and card backgrounds |
+| **Background (Secondary)** | `#f9fafb` | Section backgrounds, subtle contrast |
+| **Background (Tertiary)** | `#f3f4f6` | Hover states, disabled states |
+| **Brand Primary** | `#14b8a6` (Teal) | CTAs, accents, active states |
+| **Brand Secondary** | `#0d9488` (Dark Teal) | Hover, focus states |
+| **Text (Primary)** | `#111827` | Headings, body text |
+| **Text (Secondary)** | `#6b7280` | Muted text, descriptions |
+| **Text (Tertiary)** | `#9ca3af` | Placeholder, disabled text |
+| **Border (Light)** | `#e5e7eb` | Card borders, dividers |
+| **Border (Medium)** | `#d1d5db` | Interactive element borders |
+| **Accent (Success)** | `#10b981` | Confirmations, positive states |
+| **Accent (Warning)** | `#f59e0b` | Alerts, escrow pending |
+| **Accent (Error)** | `#ef4444` | Errors, critical states |
+
+### Background Layers
+
+* **Layer 1 (Page):** White (`#ffffff`)
+* **Layer 2 (Cards/Sections):** White with soft shadow `shadow-sm`
+* **Layer 3 (Hover):** Light gray `#f9fafb` with `shadow-md`
+* **Subtle Overlays:** `bg-gradient-to-r from-blue-50 to-transparent` for accent panels (max opacity 0.4)
+
+## 4.1 Image Placeholder & Frame Strategy
+
+All pages include reserved spaces for images and visual content. These are marked with:
+
+* **HTML Comment Tags:** `{/* Image: Hero section showcase */}` for Next.js components
+* **Image Frame Boxes:** Placeholder divs with `bg-gray-100 border-2 border-dashed border-gray-300` and centered text: "Image placeholder — [purpose]"
+* **Alt Text Ready:** When images are added, ensure `alt` attributes describe the content for accessibility
+* **Responsive Sizing:** All image containers use `w-full h-auto` with aspect ratio classes (`aspect-video`, `aspect-square`, etc.)
+
+Example placeholder pattern:
+```tsx
+{/* Image: Provider showcase carousel */}
+<div className="w-full aspect-video bg-gray-100 border-2 border-dashed border-gray-300 rounded-2xl flex items-center justify-center">
+  <span className="text-sm text-gray-500">Image placeholder — Provider showcase</span>
+</div>
+```
+
+## 4.2 Frontend Engineering Variables (Tailwind Setup)
+
+## 4.2 Frontend Engineering Variables (Tailwind Setup)
+
+These exact configurations ensure the light theme design system is mathematically sound.
 
 ```javascript
 // tailwind.config.js
@@ -153,52 +206,72 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Hajo Brand Tokens
+        // Hajo Brand Tokens (Light Theme)
         brand: {
-          50: '#f0fdfa', // Surface highlights
-          100: '#ccfbf1',
-          500: '#14b8a6', // Primary Brand (Teal/Blue shift for trust)
-          900: '#111827', // Deep Obsidian (Primary Text/Buttons)
+          50: '#f0fdfa',  // Lightest tint
+          100: '#ccfbf1', // Light accent
+          200: '#99f6e4', // Medium light
+          500: '#14b8a6', // Primary brand (Teal)
+          600: '#0d9488', // Brand hover
+          900: '#111827', // Deep text
         },
-        // Escrow & Financial States
+        // Financial States
         escrow: {
           light: '#fef3c7',
-          base: '#f59e0b', // Pending funds
+          base: '#fbbf24',  // Amber for pending
+          dark: '#d97706',
         },
+        // Tier System
         tier: {
-          bronze: '#CD7F32',
-          silver: '#9CA3AF', // Mapped to Tailwind gray-400 for consistency
-          gold: '#F59E0B',
-          platinum: '#E5E4E2',
+          bronze: '#78350f',
+          silver: '#6b7280',
+          gold: '#d97706',
+          platinum: '#8b5cf6',
+        },
+        // Semantic
+        success: '#10b981',
+        warning: '#f59e0b',
+        error: '#ef4444',
+        // Backgrounds
+        surface: {
+          light: '#ffffff',
+          muted: '#f9fafb',
+          secondary: '#f3f4f6',
         }
       },
       boxShadow: {
-        // Custom refined shadows (less blur, more architectural)
         'subtle': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
-        'drawer': '-10px 0 15px -3px rgba(0, 0, 0, 0.1)',
+        'card': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)',
+        'hover': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+        'focus': '0 10px 15px -3px rgba(20, 184, 166, 0.2)',
       },
       fontSize: {
-        // Enforcing strict leading (line-heights)
-        'xs': ['0.75rem', { lineHeight: '1.125rem' }],
+        'xs': ['0.75rem', { lineHeight: '1rem' }],
         'sm': ['0.875rem', { lineHeight: '1.25rem' }],
         'base': ['1rem', { lineHeight: '1.5rem' }],
         'lg': ['1.125rem', { lineHeight: '1.75rem' }],
         'xl': ['1.25rem', { lineHeight: '1.75rem' }],
         '2xl': ['1.5rem', { lineHeight: '2rem' }],
+        '3xl': ['1.875rem', { lineHeight: '2.25rem' }],
+        '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
       },
       animation: {
         'slide-in-right': 'slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         'fade-in': 'fadeIn 0.2s ease-out forwards',
+        'pulse-subtle': 'pulseSubtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
       keyframes: {
         slideInRight: {
-          '0%': { transform: 'translateX(100%)' },
-          '100%': { transform: 'translateX(0)' },
+          '0%': { transform: 'translateX(100%)', opacity: '0' },
+          '100%': { transform: 'translateX(0)', opacity: '1' },
         },
         fadeIn: {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' },
+        },
+        pulseSubtle: {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.8' },
         }
       }
     }
