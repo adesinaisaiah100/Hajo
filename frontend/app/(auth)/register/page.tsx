@@ -6,7 +6,7 @@ export default function RegisterPage() {
     <AuthPanel
       eyebrow="Create your account"
       title="Choose your role and start with phone onboarding."
-      description="Phase 1 keeps registration intentionally lean: select how you want to use SkillBridge, then submit basic phone-led onboarding details."
+      description="Select how you want to use Hajo, then submit basic phone-led onboarding details to get started."
     >
       <RegisterForm />
     </AuthPanel>

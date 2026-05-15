@@ -4,12 +4,12 @@ import { NextResponse } from "next/server";
 const PROTECTED_PREFIXES = ["/provider", "/customer"];
 const AUTH_PAGES = ["/login", "/register", "/verify-otp"];
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const refreshToken = request.cookies.get("sb_refresh_token")?.value;
   const { pathname } = request.nextUrl;
 
   const isProtectedPath = PROTECTED_PREFIXES.some((prefix) =>
-    pathname.startsWith(prefix)
+    pathname.startsWith(prefix),
   );
 
   if (isProtectedPath && !refreshToken) {
@@ -24,5 +24,11 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/provider/:path*", "/customer/:path*", "/login", "/register", "/verify-otp"],
+  matcher: [
+    "/provider/:path*",
+    "/customer/:path*",
+    "/login",
+    "/register",
+    "/verify-otp",
+  ],
 };

@@ -1,12 +1,19 @@
 import { create } from "zustand";
 
 export type UserRole = "provider" | "customer" | null;
+export type VerificationTier = "TIER_0" | "TIER_1" | "TIER_2" | "TIER_3";
 
 type AuthUser = {
   id?: string;
+  firstName?: string;
+  lastName?: string;
   fullName?: string;
   phone?: string;
+  email?: string;
   role?: Exclude<UserRole, null>;
+  verificationTier?: VerificationTier;
+  squadAccountNo?: string;
+  isVerified?: boolean;
 };
 
 type AuthState = {

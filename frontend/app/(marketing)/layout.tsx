@@ -8,23 +8,23 @@ export default function MarketingLayout({
 }) {
   return (
     <div className="page-shell">
-      <header className="sticky top-0 z-50 border-b border-[var(--color-line)] bg-[rgba(255,253,249,0.82)] backdrop-blur-md">
+      <header className="sticky top-0 z-50 border-b border-[#e5e7eb] bg-white/80 backdrop-blur-md">
         <div className="mx-auto flex h-[72px] w-full max-w-7xl items-center justify-between px-5 sm:px-8">
           <Link href="/" className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--color-brand)] text-sm font-semibold tracking-[0.24em] text-white">
+            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#14b8a6] text-sm font-bold tracking-wider text-white">
               SB
             </span>
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--color-brand)]">
+              <p className="text-sm font-bold uppercase tracking-wider text-[#14b8a6]">
                 SkillBridge
               </p>
-              <p className="text-sm text-[var(--color-ink-muted)]">
+              <p className="text-xs text-[#6b7280]">
                 Local services with trusted payments
               </p>
             </div>
           </Link>
 
-          <nav className="hidden items-center gap-8 text-sm font-medium text-[var(--color-ink-muted)] md:flex">
+          <nav className="hidden items-center gap-8 text-sm font-medium text-[#6b7280] md:flex">
             <a href="#how-it-works">How it works</a>
             <a href="#value">Why it matters</a>
             <a href="#trust">Trust layer</a>
@@ -33,13 +33,13 @@ export default function MarketingLayout({
           <div className="flex items-center gap-3">
             <Link
               href="/login"
-              className="hidden rounded-full px-4 py-2 text-sm font-medium text-[var(--color-brand-strong)] sm:inline-flex"
+              className="hidden rounded-lg px-4 py-2 text-sm font-semibold text-[#14b8a6] transition hover:text-[#0d9488] sm:inline-flex"
             >
               Sign in
             </Link>
             <Link
               href="/register"
-              className="inline-flex rounded-full bg-[var(--color-brand)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--color-brand-strong)]"
+              className="inline-flex rounded-lg bg-[#14b8a6] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#0d9488]"
             >
               Join SkillBridge
             </Link>
@@ -49,32 +49,32 @@ export default function MarketingLayout({
 
       <main>{children}</main>
 
-      <footer className="mt-20 border-t border-[var(--color-line)] bg-[rgba(18,25,22,0.98)] text-white">
+      <footer className="mt-20 border-t border-[#e5e7eb] bg-white text-[#111827]">
         <div className="mx-auto grid min-h-[320px] w-full max-w-7xl gap-10 px-5 py-14 sm:px-8 lg:grid-cols-[1.2fr_0.8fr]">
           <div className="space-y-4">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#9fceb8]">
+            <p className="text-sm font-semibold uppercase tracking-wider text-[#14b8a6]">
               SkillBridge
             </p>
-            <h2 className="max-w-xl text-3xl font-semibold tracking-tight">
+            <h2 className="max-w-xl text-2xl font-bold tracking-tight">
               Discovery, escrow, and financial identity in one platform.
             </h2>
-            <p className="max-w-2xl text-base leading-8 text-white/72">
+            <p className="max-w-2xl text-base leading-8 text-[#6b7280]">
               Built for providers who are skilled but underserved, and for
               customers who want a safer way to find trusted local help.
             </p>
           </div>
 
-          <div className="grid gap-4 text-sm text-white/72 sm:grid-cols-2">
+          <div className="grid gap-4 text-sm text-[#6b7280] sm:grid-cols-2">
             <div className="space-y-3">
-              <p className="font-semibold text-white">Get started</p>
+              <p className="font-semibold text-[#111827]">Get started</p>
               <Link href="/register">Create account</Link>
               <Link href="/login">Login with phone</Link>
             </div>
             <div className="space-y-3">
-              <p className="font-semibold text-white">Phase 1 focus</p>
-              <p>Marketing shell</p>
-              <p>Auth routing</p>
-              <p>API and store wiring</p>
+              <p className="font-semibold text-[#111827]">Company</p>
+              <Link href="#">About Us</Link>
+              <Link href="#">Contact</Link>
+              <Link href="#">Privacy Policy</Link>
             </div>
           </div>
         </div>

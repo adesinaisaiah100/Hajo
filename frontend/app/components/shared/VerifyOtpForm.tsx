@@ -1,18 +1,29 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/app/components/ui/Button";
 import { Input } from "@/app/components/ui/Input";
 import { api } from "@/app/services/api";
 import { useAuthStore } from "@/app/store/auth.store";
+import { toast } from "@/app/store/toast.store";
 
 export function VerifyOtpForm() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const setAccessToken = useAuthStore((state) => state.setAccessToken);
+  const { setAccessToken, setUser } = useAuthStore();
   const otpDigits = useMemo(() => otp.padEnd(6, " ").slice(0, 6).split(""), [otp]);
+
+  useEffect(() => {
+    const phoneParam = searchParams.get("phone");
+    if (phoneParam) {
+      setPhone(phoneParam);
+    }
+  }, [searchParams]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -21,16 +32,28 @@ export function VerifyOtpForm() {
 
     try {
       const response = await api.post("/auth/verify-otp", { phone, otp });
-      const accessToken = response.data?.data?.accessToken;
+      const { accessToken, user } = response.data?.data || {};
 
-      if (typeof accessToken === "string") {
+      if (accessToken) {
         setAccessToken(accessToken);
+        setUser(user);
+        
+        // Ensure role in store is updated to lowercase for the shell
+        useAuthStore.getState().setRole(user.role.toLowerCase() as any);
+        
+        toast.success("Welcome!", `Welcome back, ${user.firstName}`);
+        
+        // Redirect based on role
+        setTimeout(() => {
+          if (user.role === "PROVIDER") {
+            router.push("/provider");
+          } else {
+            router.push("/search");
+          }
+        }, 1000);
       }
 
-      setStatus(
-        response.data?.message ??
-          "OTP verified. The shared auth store is ready for protected routes."
-      );
+      setStatus("OTP verified successfully. Redirecting...");
     } catch (error) {
       setStatus(getErrorMessage(error, "Unable to verify OTP right now."));
     } finally {
@@ -49,12 +72,12 @@ export function VerifyOtpForm() {
       />
 
       <div className="space-y-3">
-        <label className="text-sm font-medium text-foreground">OTP code</label>
+        <label className="text-sm font-semibold text-[#111827]">OTP code</label>
         <div className="grid grid-cols-6 gap-3">
           {otpDigits.map((digit, index) => (
             <div
               key={`${digit}-${index}`}
-              className="flex h-14 items-center justify-center rounded-2xl border border-[var(--color-line)] bg-white text-lg font-semibold"
+              className="flex h-14 items-center justify-center rounded-lg border-2 border-[#e5e7eb] bg-white text-lg font-bold text-[#111827]"
             >
               {digit.trim() || "•"}
             </div>
@@ -72,13 +95,8 @@ export function VerifyOtpForm() {
         />
       </div>
 
-      <div className="rounded-[1.5rem] border border-dashed border-[var(--color-line)] bg-white p-4 text-sm leading-7 text-[var(--color-ink-muted)]">
-        The OTP boxes above mirror the future polished experience while keeping
-        the Phase 1 implementation simple and backend-ready.
-      </div>
-
       {status ? (
-        <p className="rounded-2xl bg-[#f1ede6] px-4 py-3 text-sm leading-7 text-[var(--color-brand-strong)]">
+        <p className="rounded-lg bg-[#ecfdf5] border border-[#a7f3d0] px-4 py-3 text-sm leading-7 text-[#047857] font-medium">
           {status}
         </p>
       ) : null}

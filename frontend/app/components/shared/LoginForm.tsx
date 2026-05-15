@@ -2,11 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { api } from "@/app/services/api";
 import { Button } from "@/app/components/ui/Button";
 import { Input } from "@/app/components/ui/Input";
+import { toast } from "@/app/store/toast.store";
 
 export function LoginForm() {
+  const router = useRouter();
   const [phone, setPhone] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -18,8 +21,19 @@ export function LoginForm() {
 
     try {
       const response = await api.post("/auth/login", { phone });
+      
+      const otp = response.data?.data?.otp;
+      if (otp) {
+        toast.success("Verification Code", `Your Hajo code is ${otp}`);
+      }
+
+      // Auto redirect after delay
+      setTimeout(() => {
+        router.push(`/verify-otp?phone=${encodeURIComponent(phone)}`);
+      }, 1500);
+
       setStatus(
-        response.data?.message ?? "OTP sent. Continue to verification to sign in."
+        response.data?.message ?? "OTP sent. Redirecting to verification..."
       );
     } catch (error) {
       setStatus(getErrorMessage(error, "Unable to start login right now."));
@@ -38,13 +52,8 @@ export function LoginForm() {
         required
       />
 
-      <div className="rounded-[1.5rem] border border-[var(--color-line)] bg-[#f6f1e8] p-4 text-sm leading-7 text-[var(--color-ink-muted)]">
-        Login is passwordless. The backend can issue an OTP and keep the access
-        token flow consistent with the shared API client.
-      </div>
-
       {status ? (
-        <p className="rounded-2xl bg-[#f1ede6] px-4 py-3 text-sm leading-7 text-[var(--color-brand-strong)]">
+        <p className="rounded-lg bg-[#ecfdf5] border border-[#a7f3d0] px-4 py-3 text-sm leading-7 text-[#047857] font-medium">
           {status}
         </p>
       ) : null}
@@ -55,7 +64,7 @@ export function LoginForm() {
         </Button>
         <Link
           href="/verify-otp"
-          className="text-sm font-medium text-[var(--color-brand-strong)]"
+          className="text-sm font-semibold text-[#14b8a6] transition hover:text-[#0d9488]"
         >
           Go to OTP verification
         </Link>

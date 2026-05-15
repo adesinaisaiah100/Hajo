@@ -13,38 +13,55 @@ export function AuthPanel({
   children: ReactNode;
 }) {
   return (
-    <div className="grid w-full max-w-5xl gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-      <div className="rounded-[2rem] bg-[#123227] p-8 text-white shadow-2xl">
+    <div className="grid w-full max-w-5xl gap-10 lg:gap-16 lg:grid-cols-[1fr_1.1fr]">
+      {/* Left Panel - Hero Content */}
+      <div className="flex flex-col justify-center space-y-6 sm:space-y-8">
         <Link
           href="/"
-          className="inline-flex rounded-full border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-[#a7d5c0]"
+          className="inline-flex w-fit items-center gap-2 rounded-full border border-[#e5e7eb] px-3 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-[#14b8a6] transition hover:border-[#14b8a6] hover:bg-[#f9fafb]"
         >
-          Back to landing
+          <span>←</span> Back
         </Link>
-        <p className="mt-8 text-sm font-semibold uppercase tracking-[0.24em] text-[#9fceb8]">
-          {eyebrow}
-        </p>
-        <h1 className="mt-4 text-4xl font-semibold tracking-tight text-balance">
-          {title}
-        </h1>
-        <p className="mt-5 max-w-md text-base leading-8 text-white/78">
+
+        <div className="space-y-2 sm:space-y-3">
+          <p className="text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-[#14b8a6]">
+            {eyebrow}
+          </p>
+          <h1 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight text-[#111827] lg:text-5xl">
+            {title}
+          </h1>
+        </div>
+
+        <p className="max-w-md text-base sm:text-lg leading-relaxed text-[#6b7280]">
           {description}
         </p>
 
-        <div className="mt-10 space-y-4 rounded-[1.5rem] border border-white/10 bg-white/8 p-5 text-sm leading-7 text-white/72">
-          <p>
-            Phone-first authentication keeps the flow accessible for providers
-            who mainly operate from mobile devices.
-          </p>
-          <p>
-            Every completed job later becomes financial signal, so onboarding
-            must feel simple enough to finish quickly.
-          </p>
+        {/* Feature Highlights */}
+        <div className="hidden sm:block space-y-4 rounded-2xl bg-[#f0fdfa] border border-[#ccfbf1] p-6 shadow-sm">
+          <div className="flex gap-3 items-start">
+            <div className="mt-0.5 h-5 w-5 rounded-full bg-[#10b981] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+              ✓
+            </div>
+            <p className="text-sm leading-relaxed text-[#111827]">
+              Phone-first onboarding keeps the flow accessible for providers who mainly work from mobile devices.
+            </p>
+          </div>
+          <div className="flex gap-3 items-start">
+            <div className="mt-0.5 h-5 w-5 rounded-full bg-[#10b981] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+              ✓
+            </div>
+            <p className="text-sm leading-relaxed text-[#111827]">
+              Fast registration unlocks wallet creation and booking discovery within minutes.
+            </p>
+          </div>
         </div>
       </div>
 
-      <div className="rounded-[2rem] border border-[var(--color-line)] bg-[var(--color-surface-strong)] p-6 shadow-xl sm:p-8">
-        {children}
+      {/* Right Panel - Form Card */}
+      <div className="flex items-center justify-center">
+        <div className="w-full rounded-3xl border border-[#e5e7eb] bg-white p-6 sm:p-10 shadow-sm">
+          {children}
+        </div>
       </div>
     </div>
   );

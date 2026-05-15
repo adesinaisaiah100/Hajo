@@ -1,304 +1,258 @@
 import { AppShell } from "@/app/components/shared/AppShell";
 import { Button } from "@/app/components/ui/Button";
 
-const providerHighlights = [
-  "Get discovered by customers in their city who cannot find them on current platforms.",
-  "Get paid safely with escrow protecting both parties from failed jobs and payment disputes.",
-  "Build a financial identity because every completed job adds to a verifiable score.",
-  "Manage bookings, revenue, and customer insights from one dashboard as the platform grows.",
-];
-
-const customerHighlights = [
-  "Find verified, rated providers nearby using plain language search and AI-powered matching.",
-  "Book and pay safely with money held in escrow until the job is confirmed complete.",
-  "Trust the platform through phone verification and a visible behavioral track record.",
-];
-
-const institutionHighlights = [
-  "Access a pre-scored population of informal workers with months of behavioral data.",
-  "Skip the KYC cold start because users arrive with real economic activity history.",
-  "Consume anonymised credit profiles later through partner-facing API access.",
-];
-
-const stats = [
-  { value: "5 min", label: "Provider onboarding target" },
-  { value: "100%", label: "Phone-verified entry point" },
-  { value: "3", label: "Problems solved at once" },
-  { value: "Phase 1", label: "Landing, auth shell, API wiring" },
-];
-
 export default function MarketingHomePage() {
   return (
-    <AppShell className="px-5 py-8 sm:px-8 sm:py-12">
-      <section className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
-        <div className="space-y-7">
-          <div className="inline-flex rounded-full border border-[var(--color-line)] bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-[var(--color-brand)]">
-            Marketplace + escrow + financial identity
+    <AppShell className="px-4 py-8 sm:px-8 sm:py-16">
+      {/* Hero Section */}
+      <section className="grid gap-10 lg:gap-16 lg:grid-cols-[1.2fr_1fr] lg:items-center">
+        <div className="space-y-6 sm:space-y-8 text-center lg:text-left">
+          <div className="inline-flex rounded-full border border-[#e5e7eb] bg-white px-3 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-[#14b8a6] shadow-sm">
+            ✨ Marketplace + Escrow + Identity
           </div>
 
-          <div className="space-y-5">
-            <h1 className="max-w-4xl text-5xl font-semibold tracking-[-0.04em] text-balance sm:text-6xl lg:text-7xl">
-              Local services people can trust. Economic identity providers can
-              grow with.
+          <div className="space-y-4">
+            <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-[#111827] sm:text-5xl lg:text-6xl">
+              Find skilled artisans you can trust. <span className="text-[#14b8a6]">Book, pay safely</span>, every time.
             </h1>
-            <p className="max-w-3xl text-lg leading-8 text-[var(--color-ink-muted)] sm:text-xl">
-              SkillBridge is a two-sided marketplace for barbers,
-              electricians, plumbers, tailors, caterers, logistics providers,
-              and more. Customers discover trusted help, while every completed
-              transaction helps providers build a credible financial record.
+            <p className="mx-auto lg:mx-0 max-w-2xl text-base leading-relaxed text-[#6b7280] sm:text-lg">
+              Hajo connects you to verified local artisans — plumbers, electricians, tailors and more — with AI-powered matching, secure escrow payments, and a trust score that means something.
             </p>
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Button href="/register" size="lg">
-              Join as provider or customer
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
+            <Button href="/register" size="lg" className="w-full sm:w-auto text-base">
+              Get Started Free
             </Button>
-            <Button href="/login" variant="secondary" size="lg">
-              Continue with phone login
+            <Button href="/login" variant="secondary" size="lg" className="w-full sm:w-auto text-base">
+              Sign In
             </Button>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {stats.map((stat) => (
-              <div
-                key={stat.label}
-                className="section-frame rounded-3xl px-5 py-5"
-              >
-                <p className="text-3xl font-semibold tracking-tight">
-                  {stat.value}
-                </p>
-                <p className="mt-2 text-sm leading-6 text-[var(--color-ink-muted)]">
-                  {stat.label}
-                </p>
-              </div>
-            ))}
+          {/* Key Stats */}
+          <div className="grid grid-cols-3 gap-2 sm:gap-4 pt-6 sm:pt-8 border-t border-[#e5e7eb]">
+            <div className="space-y-1">
+              <p className="text-xl sm:text-2xl font-bold text-[#111827]">5 min</p>
+              <p className="text-[10px] sm:text-xs text-[#6b7280] uppercase tracking-wider font-semibold">Setup</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xl sm:text-2xl font-bold text-[#111827]">100%</p>
+              <p className="text-[10px] sm:text-xs text-[#6b7280] uppercase tracking-wider font-semibold">Verified</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xl sm:text-2xl font-bold text-[#111827]">Escrow</p>
+              <p className="text-[10px] sm:text-xs text-[#6b7280] uppercase tracking-wider font-semibold">Protected</p>
+            </div>
           </div>
         </div>
 
-        <div className="section-frame relative overflow-hidden rounded-[2rem] p-6 sm:p-8">
-          <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-r from-[rgba(29,107,82,0.18)] via-transparent to-[rgba(216,141,49,0.16)]" />
-          <div className="relative space-y-6">
-            <div className="rounded-[1.5rem] border border-[var(--color-line)] bg-[#123227] p-6 text-white">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#9fceb8]">
-                Built for Nigeria-first growth
-              </p>
-              <h2 className="mt-4 text-2xl font-semibold tracking-tight">
-                Discover, book, hold funds in escrow, and build track record
-                from one flow.
-              </h2>
-              <p className="mt-4 text-sm leading-7 text-white/76">
-                Every wallet event and completed job becomes behavioral data
-                that can unlock future financial products.
-              </p>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-[1.5rem] border border-[var(--color-line)] bg-white p-5">
-                <p className="text-sm font-semibold text-[var(--color-brand)]">
-                  Customer trust layer
-                </p>
-                <p className="mt-3 text-sm leading-7 text-[var(--color-ink-muted)]">
-                  Phone-verified providers, ratings, and safer payment release.
-                </p>
-              </div>
-              <div className="rounded-[1.5rem] border border-[var(--color-line)] bg-white p-5">
-                <p className="text-sm font-semibold text-[var(--color-brand)]">
-                  Provider growth layer
-                </p>
-                <p className="mt-3 text-sm leading-7 text-[var(--color-ink-muted)]">
-                  A visible revenue trail that turns work into formal identity.
-                </p>
-              </div>
-            </div>
-
-            <div className="rounded-[1.5rem] border border-dashed border-[var(--color-line)] bg-[rgba(255,255,255,0.65)] p-5">
-              <p className="text-sm font-semibold text-[var(--color-brand-strong)]">
-                Phase 1 frontend objective
-              </p>
-              <p className="mt-2 text-sm leading-7 text-[var(--color-ink-muted)]">
-                Establish the marketing shell and auth flow structure now so
-                marketplace and dashboard phases can grow on a stable route and
-                state foundation.
-              </p>
-            </div>
+        {/* Hero Image Placeholder */}
+        <div className="flex items-center justify-center order-first lg:order-last">
+          <div className="w-full max-w-md aspect-square bg-[#f9fafb] border border-[#e5e7eb] rounded-3xl flex flex-col items-center justify-center space-y-4 p-8 shadow-sm">
+            <div className="text-5xl">📱</div>
+            <span className="text-center text-sm font-medium text-[#6b7280]">
+              Mobile App Experience
+            </span>
           </div>
         </div>
       </section>
 
-      <section
-        id="how-it-works"
-        className="mt-8 grid gap-6 lg:grid-cols-3"
-      >
+      {/* How It Works - Three Steps */}
+      <section className="mt-16 sm:mt-24 space-y-10">
+        <div className="text-center space-y-3 px-4">
+          <h2 className="text-3xl sm:text-4xl font-bold text-[#111827]">
+            Three simple steps to start
+          </h2>
+          <p className="text-base sm:text-lg text-[#6b7280]">
+            From signup to your first booking in under 5 minutes
+          </p>
+        </div>
+
+        <div className="grid gap-6 lg:gap-8 lg:grid-cols-3">
+          {[
+            {
+              step: "01",
+              title: "Register with phone",
+              desc: "Quick signup using OTP verification. No passwords, no friction.",
+              icon: "📞",
+            },
+            {
+              step: "02",
+              title: "Create your wallet",
+              desc: "Instant access to escrow payments, transfers, and transaction history.",
+              icon: "💳",
+            },
+            {
+              step: "03",
+              title: "Start working",
+              desc: "For providers: get discovered. For customers: find trusted help nearby.",
+              icon: "✨",
+            },
+          ].map((item) => (
+            <div
+              key={item.step}
+              className="rounded-2xl border border-[#e5e7eb] bg-white p-6 sm:p-8 shadow-sm hover:shadow-md transition-shadow space-y-4"
+            >
+              <div className="flex items-baseline gap-3">
+                <span className="text-2xl sm:text-3xl">{item.icon}</span>
+                <span className="text-xs font-bold uppercase tracking-widest text-[#14b8a6]">
+                  Step {item.step}
+                </span>
+              </div>
+              <h3 className="text-xl sm:text-2xl font-bold text-[#111827]">{item.title}</h3>
+              <p className="text-sm sm:text-base text-[#6b7280] leading-relaxed">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Value Propositions - Two Columns */}
+      <section className="mt-16 sm:mt-24 grid gap-12 lg:gap-16 lg:grid-cols-2">
+        {/* For Service Providers */}
+        <div className="space-y-6 sm:space-y-8">
+          <div className="space-y-3">
+            <h3 className="text-2xl sm:text-3xl font-bold text-[#111827]">
+              For service providers
+            </h3>
+            <p className="text-base sm:text-lg text-[#6b7280]">
+              Build your reputation and financial identity with every job completed
+            </p>
+          </div>
+
+          <ul className="space-y-4">
+            {[
+              "Get discovered by customers who need your skills",
+              "Receive payments safely with escrow protection",
+              "Build verified financial history from every transaction",
+              "Access dashboard with earnings and analytics",
+            ].map((benefit) => (
+              <li key={benefit} className="flex gap-3 items-start">
+                <div className="h-5 w-5 rounded-full bg-[#10b981] flex items-center justify-center text-white flex-shrink-0 text-xs font-bold mt-0.5">
+                  ✓
+                </div>
+                <span className="text-sm sm:text-base text-[#111827] leading-relaxed">{benefit}</span>
+              </li>
+            ))}
+          </ul>
+
+          <div className="w-full aspect-video bg-[#f9fafb] border border-[#e5e7eb] rounded-2xl flex items-center justify-center shadow-sm">
+            <span className="text-sm font-medium text-[#6b7280]">Dashboard Preview</span>
+          </div>
+        </div>
+
+        {/* For Customers */}
+        <div className="space-y-6 sm:space-y-8">
+          <div className="space-y-3">
+            <h3 className="text-2xl sm:text-3xl font-bold text-[#111827]">
+              For customers
+            </h3>
+            <p className="text-base sm:text-lg text-[#6b7280]">
+              Find trusted, verified providers with safe payment and fair pricing
+            </p>
+          </div>
+
+          <ul className="space-y-4">
+            {[
+              "Search for providers using natural language",
+              "See verified ratings, reviews, and profiles",
+              "Book with safe escrow payment protection",
+              "Release payment only after job confirmation",
+            ].map((benefit) => (
+              <li key={benefit} className="flex gap-3 items-start">
+                <div className="h-5 w-5 rounded-full bg-[#10b981] flex items-center justify-center text-white flex-shrink-0 text-xs font-bold mt-0.5">
+                  ✓
+                </div>
+                <span className="text-sm sm:text-base text-[#111827] leading-relaxed">{benefit}</span>
+              </li>
+            ))}
+          </ul>
+
+          <div className="w-full aspect-video bg-[#f9fafb] border border-[#e5e7eb] rounded-2xl flex items-center justify-center shadow-sm">
+            <span className="text-sm font-medium text-[#6b7280]">Search Interface Preview</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust & Security Section */}
+      <section className="mt-16 sm:mt-24 rounded-3xl bg-[#f0fdfa] border border-[#ccfbf1] p-6 sm:p-12 space-y-8">
+        <div className="grid gap-8 lg:grid-cols-2 lg:items-center">
+          <div className="space-y-4">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#111827]">
+              Built on trust and verified identity
+            </h2>
+            <p className="text-base sm:text-lg text-[#6b7280] leading-relaxed">
+              Every user is phone-verified. Every transaction is recorded. Every reputation is built from real activity, not promises.
+            </p>
+
+            <div className="pt-4 space-y-4 border-t border-[#ccfbf1]">
+              <div className="flex gap-4">
+                <span className="text-2xl sm:text-3xl">🔒</span>
+                <div>
+                  <p className="font-bold text-[#111827]">Escrow Protection</p>
+                  <p className="text-sm text-[#6b7280]">Funds held safely until job confirmation</p>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <span className="text-2xl sm:text-3xl">✔️</span>
+                <div>
+                  <p className="font-bold text-[#111827]">Phone Verified</p>
+                  <p className="text-sm text-[#6b7280]">All users verified through OTP</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="w-full aspect-square bg-white border border-[#e5e7eb] rounded-2xl flex items-center justify-center shadow-sm">
+            <span className="text-sm font-medium text-[#6b7280]">Security Features</span>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="mt-16 sm:mt-24 rounded-3xl border border-[#e5e7eb] bg-white p-8 sm:p-12 space-y-6 sm:space-y-8 text-center shadow-sm">
+        <div className="space-y-3">
+          <h2 className="text-3xl sm:text-4xl font-bold text-[#111827]">Ready to join Hajo?</h2>
+          <p className="text-base sm:text-lg text-[#6b7280] max-w-2xl mx-auto">
+            Sign up in 5 minutes. No hidden fees. Get discovered or find trusted help today.
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+          <Button href="/register" size="lg" className="w-full sm:w-auto text-base">
+            Create Your Account
+          </Button>
+          <Button href="/login" variant="secondary" size="lg" className="w-full sm:w-auto text-base">
+            Sign In
+          </Button>
+        </div>
+      </section>
+
+      {/* Bottom Section - Additional Info */}
+      <section className="mt-16 sm:mt-24 grid gap-6 sm:gap-8 lg:grid-cols-3 text-center pb-8">
         {[
           {
-            step: "01",
-            title: "Onboard in minutes",
-            body: "Phone-based registration gets providers and customers into the platform quickly, while leaving room for richer profile capture in later phases.",
+            stat: "24/7",
+            label: "Customer Support",
+            desc: "Help whenever you need it",
           },
           {
-            step: "02",
-            title: "Transact with protection",
-            body: "Bookings and payments are designed around escrow so work confirmation, not blind trust, controls fund release.",
+            stat: "Nigeria",
+            label: "Current Market",
+            desc: "Scaling to other regions soon",
           },
           {
-            step: "03",
-            title: "Turn work into identity",
-            body: "Completed jobs, revenue, reviews, and account age become alternative data for a growing financial profile.",
+            stat: "Open",
+            label: "For Everyone",
+            desc: "No prerequisites or barriers",
           },
         ].map((item) => (
-          <article
-            key={item.step}
-            className="section-frame rounded-[2rem] p-6 sm:p-7"
-          >
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--color-accent)]">
-              Step {item.step}
-            </p>
-            <h3 className="mt-4 text-2xl font-semibold tracking-tight">
-              {item.title}
-            </h3>
-            <p className="mt-4 text-sm leading-7 text-[var(--color-ink-muted)]">
-              {item.body}
-            </p>
-          </article>
+          <div key={item.label} className="space-y-2 rounded-2xl bg-[#f9fafb] p-6 border border-[#e5e7eb]">
+            <p className="text-2xl sm:text-3xl font-extrabold text-[#14b8a6]">{item.stat}</p>
+            <p className="font-bold text-[#111827]">{item.label}</p>
+            <p className="text-sm text-[#6b7280]">{item.desc}</p>
+          </div>
         ))}
-      </section>
-
-      <section
-        id="value"
-        className="mt-8 grid gap-6 lg:grid-cols-[1.08fr_0.92fr]"
-      >
-        <article className="section-frame rounded-[2rem] p-6 sm:p-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--color-brand)]">
-            The problem
-          </p>
-          <h2 className="mt-4 text-3xl font-semibold tracking-tight">
-            SkillBridge solves three linked failures in one system.
-          </h2>
-          <ul className="mt-6 space-y-4 text-base leading-8 text-[var(--color-ink-muted)]">
-            <li>
-              <span className="font-semibold text-foreground">
-                Informal workers are invisible to the formal economy.
-              </span>{" "}
-              No transaction history means no credit, no insurance, and no
-              financial products.
-            </li>
-            <li>
-              <span className="font-semibold text-foreground">
-                Customers cannot discover or trust local providers.
-              </span>{" "}
-              Word-of-mouth is unreliable and there is no built-in verification
-              layer.
-            </li>
-            <li>
-              <span className="font-semibold text-foreground">
-                Financial institutions cannot serve this population.
-              </span>{" "}
-              They lack usable behavioral data on people already doing real
-              business every day.
-            </li>
-          </ul>
-        </article>
-
-        <article
-          id="trust"
-          className="section-frame rounded-[2rem] p-6 sm:p-8"
-        >
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--color-brand)]">
-            Trust architecture
-          </p>
-          <h2 className="mt-4 text-3xl font-semibold tracking-tight">
-            The landing page makes the product promise concrete.
-          </h2>
-          <p className="mt-4 text-base leading-8 text-[var(--color-ink-muted)]">
-            Discovery, verification, escrow, and financial identity show up as
-            one connected flow rather than four disconnected features.
-          </p>
-          <div className="mt-6 rounded-[1.5rem] border border-[var(--color-line)] bg-white p-5">
-            <p className="text-sm font-semibold text-[var(--color-brand-strong)]">
-              Core message
-            </p>
-            <p className="mt-2 text-sm leading-7 text-[var(--color-ink-muted)]">
-              SkillBridge is where informal workers work, get paid, and build a
-              financial identity simultaneously.
-            </p>
-          </div>
-        </article>
-      </section>
-
-      <section className="mt-8 grid gap-6 xl:grid-cols-3">
-        <ValueCard
-          title="For service providers"
-          items={providerHighlights}
-          tone="brand"
-        />
-        <ValueCard
-          title="For customers"
-          items={customerHighlights}
-          tone="neutral"
-        />
-        <ValueCard
-          title="For financial institutions"
-          items={institutionHighlights}
-          tone="accent"
-        />
-      </section>
-
-      <section className="mt-8 rounded-[2rem] bg-[#12271f] px-6 py-8 text-white sm:px-8 sm:py-10">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-2xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#9fceb8]">
-              Phase 1 ready
-            </p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-              Start with the shell now. Grow search, booking, wallets, and
-              dashboards on top of it next.
-            </h2>
-          </div>
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Button href="/register" size="lg" className="bg-white text-[#12271f] hover:bg-[#f1ebe3]">
-              Create an account
-            </Button>
-            <Button
-              href="/login"
-              size="lg"
-              variant="secondary"
-              className="border-white/18 bg-white/8 text-white hover:bg-white/14"
-            >
-              Try the auth flow
-            </Button>
-          </div>
-        </div>
       </section>
     </AppShell>
-  );
-}
-
-function ValueCard({
-  title,
-  items,
-  tone,
-}: {
-  title: string;
-  items: string[];
-  tone: "brand" | "neutral" | "accent";
-}) {
-  const toneClasses = {
-    brand: "bg-[rgba(29,107,82,0.08)]",
-    neutral: "bg-white",
-    accent: "bg-[rgba(216,141,49,0.09)]",
-  };
-
-  return (
-    <article className={`section-frame rounded-[2rem] p-6 sm:p-7 ${toneClasses[tone]}`}>
-      <h3 className="text-2xl font-semibold tracking-tight">{title}</h3>
-      <ul className="mt-5 space-y-4 text-sm leading-7 text-[var(--color-ink-muted)]">
-        {items.map((item) => (
-          <li key={item} className="flex gap-3">
-            <span className="mt-2 h-2.5 w-2.5 shrink-0 rounded-full bg-[var(--color-brand)]" />
-            <span>{item}</span>
-          </li>
-        ))}
-      </ul>
-    </article>
   );
 }

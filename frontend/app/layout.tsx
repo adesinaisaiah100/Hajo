@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Manrope } from "next/font/google";
 import "./globals.css";
+import { Providers } from "@/app/providers";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin"],
 });
 
@@ -13,9 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SkillBridge",
+  title: "Hajo",
   description:
-    "A trusted marketplace where local service providers get discovered, paid safely, and build financial identity.",
+    "A trusted marketplace where local artisans get discovered, paid safely, and build a verified reputation.",
 };
 
 export default function RootLayout({
@@ -26,10 +27,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      data-scroll-behavior="smooth"
+      className={`${manrope.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-[var(--color-surface)] text-foreground">
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
