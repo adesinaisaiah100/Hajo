@@ -10,6 +10,20 @@ The platform addresses three simultaneous problems:
 
 Hajo solves all three by being the platform where informal workers work, get paid, and build a financial identity simultaneously.
 
+## One-Command Start (Windows - No Docker)
+
+If you are demoing on a Windows machine without Docker, use the automated setup script:
+
+1.  **Prerequisites**: Install [Node.js](https://nodejs.org/) and [PostgreSQL](https://www.postgresql.org/).
+2.  **Setup**: Run the following in the project root:
+    ```cmd
+    .\setup_and_run.bat
+    ```
+
+This script will install all dependencies, sync the database, seed 30+ demo artisans, and start both services.
+
+See **[DEMO_SETUP.md](DEMO_SETUP.md)** for detailed instructions and troubleshooting.
+
 ## Quick Start with Docker (Recommended)
 
 The easiest way to run Hajo locally is with Docker and docker-compose:
