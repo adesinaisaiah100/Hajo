@@ -56,47 +56,11 @@ export default function MarketingHomePage() {
             </div>
 
             <div className="relative mx-auto w-full max-w-[500px] lg:max-w-none">
-              <div className="aspect-square rounded-[40px] bg-gradient-to-br from-[#f0fdfa] to-white p-4 shadow-2xl ring-1 ring-black/5">
-                <div className="h-full w-full rounded-[32px] border-2 border-dashed border-[#ccfbf1] bg-white flex items-center justify-center p-8 overflow-hidden relative">
-                  {/* Hero visual representation */}
-                  <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&q=80&w=2000')] bg-cover bg-center opacity-10" />
-                  <div className="z-10 grid grid-cols-2 gap-4 w-full">
-                    <div className="space-y-4">
-                      <div className="h-40 rounded-2xl bg-[#f9fafb] border border-[#e5e7eb] p-4 flex flex-col justify-end">
-                        <div className="w-12 h-12 rounded-full bg-[#14b8a6] mb-3" />
-                        <div className="w-24 h-3 rounded-full bg-[#e5e7eb] mb-2" />
-                        <div className="w-16 h-2 rounded-full bg-[#f3f4f6]" />
-                      </div>
-                      <div className="h-24 rounded-2xl bg-white border border-[#e5e7eb] shadow-sm p-4">
-                        <div className="flex items-center gap-2 mb-2">
-                          <CheckCircle2 className="h-4 w-4 text-[#14b8a6]" />
-                          <div className="w-12 h-2 rounded-full bg-[#e5e7eb]" />
-                        </div>
-                        <div className="w-full h-2 rounded-full bg-[#f3f4f6]" />
-                      </div>
-                    </div>
-                    <div className="pt-12 space-y-4">
-                      <div className="h-32 rounded-2xl bg-white border border-[#e5e7eb] shadow-lg p-4">
-                        <div className="flex justify-between items-center mb-3">
-                          <div className="w-8 h-8 rounded-full bg-[#f3f4f6]" />
-                          <div className="px-2 py-1 rounded-full bg-[#fef3c7] text-[8px] font-bold text-[#92400e]">GOLD TIER</div>
-                        </div>
-                        <div className="w-full h-3 rounded-full bg-[#f3f4f6] mb-2" />
-                        <div className="w-20 h-2 rounded-full bg-[#f3f4f6]" />
-                      </div>
-                      <div className="h-44 rounded-2xl bg-[#111827] p-4">
-                        <div className="w-8 h-8 rounded-full bg-white/10 mb-4" />
-                        <div className="space-y-2">
-                          <div className="w-full h-2 rounded-full bg-white/20" />
-                          <div className="w-full h-2 rounded-full bg-white/20" />
-                          <div className="w-2/3 h-2 rounded-full bg-white/10" />
-                        </div>
-                        <div className="mt-8 h-8 rounded-lg bg-[#14b8a6]" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <img 
+                src="/landing-img.png" 
+                alt="Connecting Nigeria's skilled workforce" 
+                className="w-full h-auto object-contain"
+              />
             </div>
           </div>
         </AppShell>
