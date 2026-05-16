@@ -1,159 +1,175 @@
 # Hajo
 
-Hajo is a two-sided local services marketplace that digitally onboards informal workers, including barbers, electricians, plumbers, tailors, event planners, dry cleaners, caterers, logistics providers, and more, and connects them to customers who need their services. Every user on the platform gets an embedded financial wallet powered by Squad API. Every transaction builds a verifiable economic identity, replacing the need for a bank history with behavioral data that grows over time.
+Hajo is a two-sided local services marketplace for customers and informal service providers. It helps people discover trusted local artisans, book services, verify identity, create Squad-powered virtual accounts, and build a financial history from real work.
 
-The platform addresses three simultaneous problems:
+The product is split into three visible layers:
 
-- Informal workers are invisible to the formal economy. No transaction history means no credit, no insurance, no financial products.
-- Customers cannot discover or trust local service providers. Word-of-mouth is unreliable; there is no verification layer.
-- Financial institutions cannot serve this population because they have no data on them.
+- The marketing site explains the product and routes users into sign-up.
+- The customer and provider dashboards handle search, bookings, wallet views, verification, AI insights, and account management.
+- The backend handles auth, OTP, bookings, Squad integration, AI services, scoring, and transactions.
 
-Hajo solves all three by being the platform where informal workers work, get paid, and build a financial identity simultaneously.
+## What The Demo Covers
 
-## One-Command Start (Windows - No Docker)
+The current codebase covers the main demo path end to end:
 
-If you are demoing on a Windows machine without Docker, use the automated setup script:
+- Customer and provider registration with phone, first name, last name, and role.
+- OTP verification and session creation.
+- Trust Center / Tier 1 verification for creating a Squad virtual account.
+- Customer search and provider profile browsing.
+- Booking creation with escrow-oriented payment flow.
+- Provider dashboard, wallet, score, and AI insight screens.
+- Quotation-related routes are present for the Phase 3.5 flow.
 
-1.  **Prerequisites**: Install [Node.js](https://nodejs.org/) and [PostgreSQL](https://www.postgresql.org/).
-2.  **Setup**: Run the following in the project root:
-    ```cmd
-    .\setup_and_run.bat
-    ```
+The demo still depends on a running PostgreSQL database and valid environment variables for the external services you want to exercise.
 
-This script will install all dependencies, sync the database, seed 30+ demo artisans, and start both services.
+## How Squad Fits In
 
-See **[DEMO_SETUP.md](DEMO_SETUP.md)** for detailed instructions and troubleshooting.
+Squad is the financial backbone of the product.
 
-## Quick Start with Docker (Recommended)
+- Tier 1 verification creates a Squad virtual account and stores the account reference on the user record.
+- Booking flows require a verified user with a virtual account before they can proceed.
+- Wallet, escrow, transfer, and payment paths are designed around Squad-backed account data.
+- The backend supports sandbox configuration through `SQUAD_SECRET_KEY`, `SQUAD_PUBLIC_KEY`, `SQUAD_WEBHOOK_SECRET`, and related variables.
 
-The easiest way to run Hajo locally is with Docker and docker-compose:
+## How AI Fits In
 
-```bash
-# Copy environment template and populate with your API keys
-cp .env.docker .env
+AI is used as a product feature, not as a replacement for the core application logic.
 
-# Start the full stack (frontend + backend + database)
-docker-compose up -d
+- Search and matching use AI-assisted ranking and provider discovery.
+- Provider insights use AI-generated recommendations and copy.
+- Quotation flows can use AI support for draft generation and refinement.
+- The backend includes AI services under `backend/src/modules/ai` and a Gemini client under `backend/src/integrations/gemini`.
+- `AI_PROVIDER` can switch between `gemini` and `mock` for local development.
 
-# View logs
-docker-compose logs -f
+## Repository Structure
+
+```text
+frontend/                  Next.js app router frontend
+    app/(marketing)          Landing page and public marketing pages
+    app/(auth)               Login, register, and OTP verification
+    app/(dashboard)          Customer and provider dashboards
+    app/components           Shared UI, forms, and dashboard components
+    app/hooks                Frontend data hooks
+    app/lib                  Utilities and mock data
+    app/services             API clients
+    app/store                Zustand auth and toast stores
+
+backend/                   Express API server
+    src/modules/auth         Register, OTP verification, Tier 1 verification
+    src/modules/booking      Booking lifecycle and escrow-related logic
+    src/modules/ai           Matching, scoring, and insight services
+    src/integrations/gemini  Gemini client used by AI services
+    src/integrations/squad   Squad API integration
+    src/jobs                 Scheduled background jobs
+    src/middleware           Auth, validation, and request middleware
+
+docs/                      Design, system, and deployment documentation
+phases/                    Phase-by-phase implementation notes
+prisma/                    Prisma schema and database tooling
+public/                    Static assets for the frontend
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to see the app.
+## Running The App
 
-**Backend API:** [http://localhost:3001](http://localhost:3001)
+### Option 1: Docker Demo Stack
 
-See [docs/docker-deployment-guide.md](docs/docker-deployment-guide.md) for comprehensive Docker documentation, troubleshooting, and production deployment.
+This is the fastest way to run the full stack locally.
 
-## Manual Setup (Without Docker)
+```bash
+cp .env.example .env
+docker compose up -d
+```
 
-### Prerequisites
-- Node.js 20+
-- PostgreSQL 16+
-- npm or yarn
+Then open:
 
-### Backend Setup
+- Frontend: `http://localhost:3000`
+- Backend: `http://localhost:3001`
+
+If you want the root workspace script that starts the database plus both apps, run:
+
+```bash
+npm run demo
+```
+
+### Option 2: Manual Development
+
+Backend:
 
 ```bash
 cd backend
 npm install
 npx prisma migrate dev
 npm run dev
-# Backend runs on http://localhost:3001
 ```
 
-### Frontend Setup
+Frontend:
 
 ```bash
+cd frontend
 npm install
 npm run dev
-# Frontend runs on http://localhost:3000
 ```
 
-Edit [app/page.tsx](app/page.tsx) to see changes reflected in real-time.
+### Root Workspace Scripts
 
-## Documentation
+From the repository root:
 
-- **[System Design](System_design_nextjs.md)** — Architecture, tech stack, and system overview
-- **[Docker Deployment Guide](docs/docker-deployment-guide.md)** — Local dev, troubleshooting, production deployment
-- **[Design System](docs/design.md)** — UI/UX specifications, component anatomy, tailwind tokens
-- **[Phase Documentation](phases/README.md)** — Development phases, implementation roadmap
-- **[Agent Workflow Rules](AGENTS.md)** — Phase-based development discipline and best practices
-
-## Project Structure
-
-```
-app/                 # Next.js frontend (App Router)
-backend/             # Express API server
-prisma/              # Database schema and migrations
-docs/                # Documentation
-phases/              # Development phases (backend/ and frontend/)
-public/              # Static assets
-```
+- `npm run dev` starts the frontend only.
+- `npm run demo` starts Postgres, the backend, and the frontend together.
+- `npm run build` builds the frontend.
+- `npm run lint` runs the frontend linter.
 
 ## Environment Variables
 
-Copy `.env.example` to `.env` and populate with your credentials:
+Copy `.env.example` to `.env` before running the stack.
+
+Required groups:
+
+- Database: `DATABASE_URL`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`
+- Auth: `JWT_SECRET`, `JWT_REFRESH_SECRET`, `CORS_ORIGIN`
+- OTP: `TERMII_API_KEY`, `TERMII_SENDER_ID`
+- AI: `AI_PROVIDER`, `GOOGLE_API_KEY`, `GEMINI_MODEL`, `GEMINI_API_BASE`
+- Squad: `SQUAD_SECRET_KEY`, `SQUAD_PUBLIC_KEY`, `SQUAD_WEBHOOK_SECRET`, `SQUAD_API_BASE`, `SQUAD_ENVIRONMENT`
+- Frontend: `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_APP_URL`
+- Optional integration values: `SUPABASE_URL`, `SUPABASE_KEY`, `REDIS_URL`, `REDIS_URI`
+
+If `TERMII_API_KEY` is empty, OTPs are printed in the backend console for development.
+
+## Verification Flow
+
+1. Register with phone, first name, last name, and role.
+2. Verify the OTP on `/verify-otp`.
+3. Open the Trust Center at `/customer/verification` or `/provider/verification`.
+4. Complete Tier 1 to create the Squad virtual account.
+5. Book a provider. Unverified users are redirected to the Trust Center before submission.
+
+## Useful References
+
+- [docs/System_design_nextjs.md](docs/System_design_nextjs.md)
+- [docs/design.md](docs/design.md)
+- [docs/docker-deployment-guide.md](docs/docker-deployment-guide.md)
+- [phases/README.md](phases/README.md)
+- [AGENTS.md](AGENTS.md)
+
+## Testing
+
+Backend tests live in `backend/tests` and can be run with:
 
 ```bash
-cp .env.example .env
+cd backend
+npm test
 ```
 
-Required API keys:
-- `SQUAD_API_KEY` — Financial transaction provider
-- `ANTHROPIC_API_KEY` — Claude AI for provider matching
-- `TERMII_API_KEY` — SMS/OTP provider
-- `SUPABASE_URL` and `SUPABASE_KEY` — Database credentials
-
-## Development Workflow
-
-### Code Standards
-
-Before committing, run linting:
+For a quick smoke check:
 
 ```bash
-npm run lint
+cd backend
+npm run test:smoke
 ```
 
-### Database Migrations
+## Notes
 
-After schema changes:
-
-```bash
-npx prisma migrate dev --name "your_migration_name"
-```
-
-### Testing
-
-Backend API tests run from TypeScript files in `backend/tests/`:
-
-```bash
-node backend/tests/your-test.ts
-```
-
-## Deployment
-
-### Frontend
-- **Vercel** (recommended) — Auto-deploy from git
-- **Docker** — See docker-compose.yml or frontend/Dockerfile
-
-### Backend
-- **Render** (recommended) — Postgres + Express
-- **Docker** — See backend/Dockerfile
-
-See [phases/backend/phase-4-backend-hardening-deploy.md](phases/backend/phase-4-backend-hardening-deploy.md) and [phases/frontend/phase-4-frontend-polish-deploy.md](phases/frontend/phase-4-frontend-polish-deploy.md) for deployment details.
-
-## Learn More
-
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Supabase Docs](https://supabase.com/docs)
-- [Prisma Docs](https://www.prisma.io/docs)
-
-## Contributing
-
-Follow the phase-based workflow documented in [AGENTS.md](AGENTS.md):
-1. Read the relevant phase doc before implementing
-2. Follow design discipline and testing requirements
-3. Run lint and tests after each feature
-4. Commit per phase with clear messages
+- The app uses Next.js App Router in `frontend/app`.
+- The backend uses Express with Prisma and PostgreSQL.
+- Demo-ready features are already wired into the codebase, but full end-to-end validation still depends on your local services and credentials being up.
 

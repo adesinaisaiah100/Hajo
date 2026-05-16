@@ -1,6 +1,6 @@
 # Phase Folder
 
-This folder contains detailed documents per build phase, breaking down the SkillBridge hackathon MVP into logical, sequential steps.
+This folder contains detailed documents per build phase, breaking down the Hajo hackathon MVP into logical, sequential steps.
 
 ## Phase Overview
 

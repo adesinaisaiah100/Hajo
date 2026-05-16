@@ -1,4 +1,4 @@
-# SkillBridge — MVP System Design & Architecture Document
+# Hajo — MVP System Design & Architecture Document
 
 **Version:** 1.0 — Hackathon MVP
 **Author:** Engineering Team
@@ -38,7 +38,7 @@
 
 ## 1. Product Overview
 
-**SkillBridge** is a responsive two-sided local services marketplace that digitally onboards informal workers — barbers, electricians, plumbers, tailors, event planners, dry cleaners, caterers, logistics providers, and more — and connects them to customers who need their services. Every user on the platform gets an embedded financial wallet powered by Squad API. Every transaction builds a verifiable economic identity, replacing the need for a bank history with behavioral data that grows over time.
+**Hajo** is a responsive two-sided local services marketplace that digitally onboards informal workers — barbers, electricians, plumbers, tailors, event planners, dry cleaners, caterers, logistics providers, and more — and connects them to customers who need their services. Every user on the platform gets an embedded financial wallet powered by Squad API. Every transaction builds a verifiable economic identity, replacing the need for a bank history with behavioral data that grows over time.
 
 The mobile app is the primary product for the hackathon because it matches how the target users actually operate: low-friction phone access, fast onboarding, location-aware discovery, and simple wallet interactions.
 
@@ -48,7 +48,7 @@ The platform addresses three simultaneous problems:
 - Customers cannot discover or trust local service providers.
 - Financial institutions cannot serve this population because they have no data on them.
 
-SkillBridge solves all three by being the platform where informal workers work, get paid, and build a financial identity simultaneously.
+Hajo solves all three by being the platform where informal workers work, get paid, and build a financial identity simultaneously.
 
 ---
 
@@ -58,9 +58,9 @@ SkillBridge solves all three by being the platform where informal workers work, 
 
 A mid-sized African nation, with Nigeria as the primary market, faces a significant economic gap: millions of skilled informal workers operate entirely outside formal systems. They earn in cash, have no transaction history, and are therefore excluded from credit, savings products, and insurance. On the other side, millions of urban residents need these services but have no trusted, searchable platform to find verified providers.
 
-### What SkillBridge Does
+### What Hajo Does
 
-| Hackathon Requirement | How SkillBridge Addresses It |
+| Hackathon Requirement | How Hajo Addresses It |
 |---|---|
 | Digitally onboard informal workers | Phone OTP + profile creation + Squad virtual account, all in under 5 minutes |
 | AI matching by skills, location, language, context | Claude processes natural language queries and ranks nearby verified providers with reasoning |
@@ -160,7 +160,7 @@ A mid-sized African nation, with Nigeria as the primary market, faces a signific
 |---|---|---|
 | Node.js + Express | Primary framework | Async-first, huge ecosystem, fast to build, JSON-native. |
 | Supabase PostgreSQL | Primary database | Free managed Postgres, instant setup, no DevOps needed. |
-# SkillBridge — MVP System Design & Architecture Document
+# Hajo — MVP System Design & Architecture Document
 
 **Version:** 1.0 — Hackathon MVP
 **Author:** Engineering Team
@@ -200,7 +200,7 @@ A mid-sized African nation, with Nigeria as the primary market, faces a signific
 
 ## 1. Product Overview
 
-**SkillBridge** is a responsive two-sided local services marketplace that digitally onboards informal workers — barbers, electricians, plumbers, tailors, event planners, dry cleaners, caterers, logistics providers, and more — and connects them to customers who need their services. Every user on the platform gets an embedded financial wallet powered by Squad API. Every transaction builds a verifiable economic identity, replacing the need for a bank history with behavioral data that grows over time.
+**Hajo** is a responsive two-sided local services marketplace that digitally onboards informal workers — barbers, electricians, plumbers, tailors, event planners, dry cleaners, caterers, logistics providers, and more — and connects them to customers who need their services. Every user on the platform gets an embedded financial wallet powered by Squad API. Every transaction builds a verifiable economic identity, replacing the need for a bank history with behavioral data that grows over time.
 
 The mobile app is the primary product for the hackathon because it matches how the target users actually operate: low-friction phone access, fast onboarding, location-aware discovery, and simple wallet interactions.
 
@@ -210,7 +210,7 @@ The platform addresses three simultaneous problems:
 - Customers cannot discover or trust local service providers.
 - Financial institutions cannot serve this population because they have no data on them.
 
-SkillBridge solves all three by being the platform where informal workers work, get paid, and build a financial identity simultaneously.
+Hajo solves all three by being the platform where informal workers work, get paid, and build a financial identity simultaneously.
 
 ---
 
@@ -220,9 +220,9 @@ SkillBridge solves all three by being the platform where informal workers work, 
 
 A mid-sized African nation, with Nigeria as the primary market, faces a significant economic gap: millions of skilled informal workers operate entirely outside formal systems. They earn in cash, have no transaction history, and are therefore excluded from credit, savings products, and insurance. On the other side, millions of urban residents need these services but have no trusted, searchable platform to find verified providers.
 
-### What SkillBridge Does
+### What Hajo Does
 
-| Hackathon Requirement | How SkillBridge Addresses It |
+| Hackathon Requirement | How Hajo Addresses It |
 |---|---|
 | Digitally onboard informal workers | Phone OTP + profile creation + Squad virtual account, all in under 5 minutes |
 | AI matching by skills, location, language, context | Claude processes natural language queries and ranks nearby verified providers with reasoning |
@@ -499,7 +499,7 @@ The mobile client consumes these endpoints directly.
 
 ## 10. Squad API Integration
 
-Squad remains the mandatory financial backbone of SkillBridge.
+Squad remains the mandatory financial backbone of Hajo.
 
 ### 10.0 Sandbox Environment (Hackathon)
 
@@ -871,7 +871,7 @@ The backend dependency set stays the same as the original design.
 
 ```
 NEXT_PUBLIC_API_URL=https://your-backend.onrender.com/api
-NEXT_PUBLIC_APP_NAME=SkillBridge
+NEXT_PUBLIC_APP_NAME=Hajo
 ```
 
 ### Deployment Flow

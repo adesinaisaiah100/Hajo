@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document summarizes the quotation system and split-escrow implementation planning for the SkillBridge hackathon MVP. All work is scoped to **Sandbox Squad environment only** (not production).
+This document summarizes the quotation system and split-escrow implementation planning for the Hajo hackathon MVP. All work is scoped to **Sandbox Squad environment only** (not production).
 
 ---
 

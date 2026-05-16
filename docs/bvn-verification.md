@@ -4,7 +4,7 @@
 
 ## Purpose
 
-This document describes the recommended BVN verification approach for the SkillBridge hackathon. BVN verification is required for provider onboarding and any user that will receive payouts.
+This document describes the recommended BVN verification approach for the Hajo hackathon. BVN verification is required for provider onboarding and any user that will receive payouts.
 
 ## Providers & Options
 

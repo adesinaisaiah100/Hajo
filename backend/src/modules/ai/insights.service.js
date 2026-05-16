@@ -99,7 +99,7 @@ function createInsightsService({
 
     const metrics = await buildMetrics(providerUserId);
     const prompt = [
-      'You are the SkillBridge provider insights engine.',
+      'You are the Hajo provider insights engine.',
       'Return a JSON object with summary, trends, and recommendations.',
       `Provider metrics: ${JSON.stringify(metrics)}`
     ].join('\n');

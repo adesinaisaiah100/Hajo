@@ -1,4 +1,4 @@
-# SkillBridge — MVP System Design & Architecture Document
+# Hajo — MVP System Design & Architecture Document
 
 **Version:** 1.0 — Hackathon MVP
 **Author:** Engineering Team
@@ -37,7 +37,7 @@
 
 ## 1. Product Overview
 
-**SkillBridge** is a two-sided local services marketplace that digitally onboards informal workers — barbers, electricians, plumbers, tailors, event planners, dry cleaners, caterers, logistics providers, and more — and connects them to customers who need their services. Every user on the platform gets an embedded financial wallet powered by Squad API. Every transaction builds a verifiable economic identity, replacing the need for a bank history with behavioral data that grows over time.
+**Hajo** is a two-sided local services marketplace that digitally onboards informal workers — barbers, electricians, plumbers, tailors, event planners, dry cleaners, caterers, logistics providers, and more — and connects them to customers who need their services. Every user on the platform gets an embedded financial wallet powered by Squad API. Every transaction builds a verifiable economic identity, replacing the need for a bank history with behavioral data that grows over time.
 
 The platform addresses three simultaneous problems:
 
@@ -45,7 +45,7 @@ The platform addresses three simultaneous problems:
 - **Customers cannot discover or trust local service providers.** Word-of-mouth is unreliable; there is no verification layer.
 - **Financial institutions cannot serve this population** because they have no data on them.
 
-SkillBridge solves all three by being the platform where informal workers work, get paid, and build a financial identity simultaneously.
+Hajo solves all three by being the platform where informal workers work, get paid, and build a financial identity simultaneously.
 
 ---
 
@@ -55,9 +55,9 @@ SkillBridge solves all three by being the platform where informal workers work, 
 
 A mid-sized African nation (Nigeria as the primary market) faces a significant economic gap: millions of skilled informal workers — artisans, tradespeople, freelancers — operate entirely outside formal systems. They earn in cash, have no transaction history, and are therefore excluded from credit, savings products, and insurance. On the other side, millions of urban residents need these services but have no trusted, searchable platform to find verified providers.
 
-### What SkillBridge Does
+### What Hajo Does
 
-| Hackathon Requirement | How SkillBridge Addresses It |
+| Hackathon Requirement | How Hajo Addresses It |
 |---|---|
 | Digitally onboard informal workers | Phone OTP + profile creation + Squad virtual account, all in under 5 minutes |
 | AI matching by skills, location, language, context | Claude processes natural language queries and ranks nearby verified providers with reasoning |
@@ -627,7 +627,7 @@ All endpoints are prefixed with `/api`. Protected endpoints require `Authorizati
 
 ## 10. Squad API Integration
 
-Squad API is the mandatory financial backbone of SkillBridge. It powers four distinct functions, each implemented in a separate file in `src/integrations/squad/`.
+Squad API is the mandatory financial backbone of Hajo. It powers four distinct functions, each implemented in a separate file in `src/integrations/squad/`.
 
 ### 10.1 Virtual Account Creation
 
@@ -653,7 +653,7 @@ async function createVirtualAccount({ userId, name, phone, email }) {
     first_name: name.split(' ')[0],
     last_name: name.split(' ').slice(1).join(' '),
     mobile_num: phone,
-    email: email || `${phone}@skillbridge.ng`
+    email: email || `${phone}@hajo.ng`
   });
   return response.data.data;
 }
@@ -954,7 +954,7 @@ Provider-only actions (accept booking, create service, withdraw) cannot be perfo
 **Layout:** Two large cards side by side (stacked on mobile)
 
 **Elements:**
-- Page title: "How do you want to use SkillBridge?"
+- Page title: "How do you want to use Hajo?"
 - **Provider card** — Icon (toolbox or wrench), "I offer services", subtitle: "Register your trade, get bookings, build your financial profile". Primary border on hover/select.
 - **Customer card** — Icon (phone/search), "I need services", subtitle: "Find verified local providers, book safely, pay with escrow protection."
 - "Already have an account? Log in" link at the bottom.
@@ -1738,7 +1738,7 @@ NODE_ENV=production
 **Frontend `.env.local`:**
 ```
 NEXT_PUBLIC_API_URL=https://your-backend.onrender.com/api
-NEXT_PUBLIC_APP_NAME=SkillBridge
+NEXT_PUBLIC_APP_NAME=Hajo
 ```
 
 ### Deployment Flow
@@ -2059,7 +2059,7 @@ No business logic rewrites. This is the key scalability design decision.
 
 ## Document Notes
 
-This document describes the complete MVP architecture for the SkillBridge platform as submitted for the Squad Hackathon. All Squad API references use the sandbox environment for the demo. Production deployment would switch to Squad's live credentials and add Smile Identity live KYC verification as the first post-hackathon enhancement.
+This document describes the complete MVP architecture for the Hajo platform as submitted for the Squad Hackathon. All Squad API references use the sandbox environment for the demo. Production deployment would switch to Squad's live credentials and add Smile Identity live KYC verification as the first post-hackathon enhancement.
 
 **Architecture designed by:** Engineering Team
 **Last updated:** May 2025

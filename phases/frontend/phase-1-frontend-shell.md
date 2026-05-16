@@ -45,7 +45,7 @@ export const useAuthStore = create(set => ({ user: null, setUser: (u) => set({ u
 
 ### Files changed
 
-- `app/layout.tsx` — updated root metadata and base body styling for the SkillBridge shell
+- `app/layout.tsx` — updated root metadata and base body styling for the Hajo shell
 - `app/globals.css` — replaced starter styles with the shared Phase 1 visual foundation
 - `app/(marketing)/layout.tsx` — added marketing header and footer shell
 - `app/(marketing)/page.tsx` — implemented the Phase 1 landing page using the product framing and value propositions
@@ -67,7 +67,7 @@ export const useAuthStore = create(set => ({ user: null, setUser: (u) => set({ u
 
 ### What was implemented
 
-Phase 1 now has a proper App Router structure with separate marketing and auth route groups, a responsive landing page aligned to the SkillBridge story, and starter auth forms that can call backend endpoints immediately. The auth UI is intentionally light, but the shared `api` client and `auth` store give later phases a stable base for token/session work.
+Phase 1 now has a proper App Router structure with separate marketing and auth route groups, a responsive landing page aligned to the Hajo story, and starter auth forms that can call backend endpoints immediately. The auth UI is intentionally light, but the shared `api` client and `auth` store give later phases a stable base for token/session work.
 
 ### Why it was done
 

@@ -25,7 +25,7 @@ export default function ProviderSettingsPage() {
               { id: "notif-1", title: "New booking request (SMS)", description: "Get an SMS when a customer requests your service." },
               { id: "notif-2", title: "Booking accepted (SMS)", description: "Get an SMS when a booking is officially accepted." },
               { id: "notif-3", title: "Payment received (SMS)", description: "Get an SMS when funds are released to your wallet." },
-              { id: "notif-4", title: "Platform updates (SMS)", description: "Occasional updates about SkillBridge features." },
+              { id: "notif-4", title: "Platform updates (SMS)", description: "Occasional updates about Hajo features." },
             ].map((item) => (
               <div key={item.id} className="flex items-center justify-between border-b border-[var(--color-line)] pb-4 last:border-0 last:pb-0">
                 <div>
@@ -116,7 +116,7 @@ export default function ProviderSettingsPage() {
             <span>Log out</span>
           </Button>
           <p className="mt-4 text-center text-xs text-[var(--color-ink-muted)]">
-            SkillBridge v1.0.0
+            Hajo v1.0.0
           </p>
         </div>
       </div>

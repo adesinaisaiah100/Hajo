@@ -1,5 +1,5 @@
 {
-  "name": "skillbridge-workspace",
+  "name": "hajo-workspace",
   "private": true,
   "scripts": {
     "dev": "cd frontend && npm run dev",

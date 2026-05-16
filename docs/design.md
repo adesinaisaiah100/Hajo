@@ -150,7 +150,7 @@ Every list, table, or dashboard section must have a designed empty state.
 
 ## 4. Light Theme Color System
 
-**SkillBridge uses a modern light-first design system** with clean whites, soft accents, and accessible contrast ratios.
+**Hajo uses a modern light-first design system** with clean whites, soft accents, and accessible contrast ratios.
 
 ### Core Light Theme Palette
 

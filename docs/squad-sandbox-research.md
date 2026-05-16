@@ -1,14 +1,14 @@
 # Squad Sandbox Environment Research
 
 **Date:** May 13, 2026  
-**Hackathon Status:** Primary environment for SkillBridge integration  
+**Hackathon Status:** Primary environment for Hajo integration  
 **Environment:** Sandbox (NOT production)
 
 ---
 
 ## Overview
 
-Squad provides a complete sandbox environment for testing and development before going live on production. For the SkillBridge hackathon, all integration work uses the **sandbox environment exclusively**. This document captures the sandbox architecture, credentials, testing tools, and integration specifics discovered during research.
+Squad provides a complete sandbox environment for testing and development before going live on production. For the Hajo hackathon, all integration work uses the **sandbox environment exclusively**. This document captures the sandbox architecture, credentials, testing tools, and integration specifics discovered during research.
 
 ---
 
@@ -270,7 +270,7 @@ Once you obtain sandbox API keys:
 
 ## Summary
 
-The **Squad sandbox environment** is a fully-featured testing ground for the SkillBridge hackathon. It supports:
+The **Squad sandbox environment** is a fully-featured testing ground for the Hajo hackathon. It supports:
 
 ✅ Virtual account creation and transfers  
 ✅ OTP-based authentication (mock or real)  

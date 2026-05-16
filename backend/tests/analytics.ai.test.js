@@ -101,7 +101,7 @@ test('cached insights are reused on repeated calls', async () => {
   const aiClient = {
     async generateInsights(prompt) {
       aiCalls += 1;
-      assert.match(prompt, /SkillBridge provider insights engine/);
+      assert.match(prompt, /Hajo provider insights engine/);
       return {
         summary: 'Generated summary',
         trends: [{ label: 'Top service', value: 'svc-1' }],
