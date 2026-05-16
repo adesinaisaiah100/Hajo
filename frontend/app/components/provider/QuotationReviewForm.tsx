@@ -44,7 +44,7 @@ export function QuotationReviewForm({ quotation, isLoading = false, onSubmit }: 
     },
   });
 
-  const materialsWatch = watch('finalMaterialsCost');
+  const materialsWatch = watch('finalMaterialsCost'); // eslint-disable-line react-hooks/incompatible-library
   const labourWatch = watch('finalLabourCost');
   const total = (materialsWatch || 0) + (labourWatch || 0);
 

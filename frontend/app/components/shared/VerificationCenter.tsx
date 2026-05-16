@@ -2,11 +2,9 @@
 
 import { useState } from "react";
 import { useAuthStore } from "@/app/store/auth.store";
-import { SectionCard } from "./SectionCard";
 import { Button } from "@/app/components/ui/Button";
 import { 
   ShieldCheck, 
-  ShieldAlert, 
   MapPin, 
   Users, 
   Fingerprint, 
@@ -24,7 +22,7 @@ import { api } from "@/app/services/api";
 import { toast } from "@/app/store/toast.store";
 
 export function VerificationCenter() {
-  const { user, setUser } = useAuthStore();
+  const { user } = useAuthStore();
   const [showTier1, setShowTier1] = useState(false);
   const [showTier2, setShowTier2] = useState(false);
   const [showTier3, setShowTier3] = useState(false);
@@ -72,53 +70,81 @@ export function VerificationCenter() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-[#111827]">Trust Center</h1>
-        <p className="text-sm text-[#6b7280]">
+        <h1 className="text-2xl font-bold text-[var(--foreground)]">Trust Center</h1>
+        <p className="text-sm text-[var(--color-ink-muted)]">
           Build your credibility on Hajo by completing tiered verification steps. 
           Higher tiers unlock more features and trust.
         </p>
       </div>
+
+      {/* Account Overview Card */}
+      {user?.verificationTier !== "TIER_0" && (
+        <div className="rounded-lg border border-[var(--color-line)] bg-white p-6 shadow-sm overflow-hidden">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-surface)] text-[var(--color-brand)]">
+                <UserCheck className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-[var(--foreground)]">Account Status: {user?.verificationTier?.replace("_", " ")}</h3>
+                <p className="text-xs text-[var(--color-ink-muted)]">Verified member of the Hajo Trust Network</p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-12">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-ink-muted)]">Virtual Account</p>
+                <p className="mt-1 font-mono text-sm font-semibold text-[var(--foreground)]">{user?.squadAccountNo || "Not assigned"}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-ink-muted)]">Account Type</p>
+                <p className="mt-1 text-sm font-semibold text-[var(--foreground)]">GTBank / NUBAN</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-3">
         {tiers.map((tier) => (
           <div 
             key={tier.id}
             className={cn(
-              "relative flex flex-col rounded-3xl border p-6 transition-all duration-300",
-              tier.status === "COMPLETED" ? "border-[#ccfbf1] bg-[#f0fdfa]" : 
-              tier.status === "AVAILABLE" ? "border-[#e5e7eb] bg-white shadow-sm hover:shadow-md" :
-              "border-[#f3f4f6] bg-gray-50 opacity-75"
+              "relative flex flex-col rounded-lg border p-6 transition-all duration-300",
+              tier.status === "COMPLETED" ? "border-[#d1fae5] bg-[#ecfdf5]" : 
+              tier.status === "AVAILABLE" ? "border-[var(--color-line)] bg-white shadow-sm hover:shadow-md" :
+              "border-[var(--color-line)] bg-[var(--color-surface)] opacity-75"
             )}
           >
             <div className="flex items-start justify-between">
               <div className={cn(
-                "rounded-2xl p-3",
-                tier.status === "COMPLETED" ? "bg-[#ccfbf1] text-[#14b8a6]" : 
-                tier.status === "AVAILABLE" ? "bg-[#f3f4f6] text-[#111827]" :
-                "bg-[#f3f4f6] text-[#9ca3af]"
+                "rounded-lg p-3",
+                tier.status === "COMPLETED" ? "bg-[#d1fae5] text-[#047857]" : 
+                tier.status === "AVAILABLE" ? "bg-[var(--color-surface)] text-[var(--foreground)]" :
+                "bg-[var(--color-surface)] text-[var(--color-ink-muted)]"
               )}>
                 <tier.icon className="h-6 w-6" />
               </div>
               {tier.status === "COMPLETED" && (
-                <div className="flex items-center gap-1 rounded-full bg-[#ccfbf1] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#0f766e]">
+                <div className="flex items-center gap-1 rounded-full bg-[#d1fae5] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#047857]">
                   <CheckCircle2 className="h-3 w-3" /> Verified
                 </div>
               )}
               {tier.status === "LOCKED" && (
-                <Lock className="h-4 w-4 text-[#9ca3af]" />
+                <Lock className="h-4 w-4 text-[var(--color-ink-muted)]" />
               )}
             </div>
 
             <div className="mt-6 flex-1">
-              <h3 className="text-lg font-bold text-[#111827]">{tier.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-[#6b7280]">
+              <h3 className="text-lg font-bold text-[var(--foreground)]">{tier.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-[var(--color-ink-muted)]">
                 {tier.description}
               </p>
 
               <div className="mt-6 space-y-3">
                 {tier.features.map((feature, i) => (
-                  <div key={i} className="flex items-center gap-2 text-xs font-medium text-[#374151]">
-                    <div className="h-1 w-1 rounded-full bg-[#14b8a6]" />
+                  <div key={i} className="flex items-center gap-2 text-xs font-medium text-[var(--foreground)]">
+                    <div className="h-1 w-1 rounded-full bg-[var(--color-brand)]" />
                     {feature}
                   </div>
                 ))}
@@ -131,11 +157,11 @@ export function VerificationCenter() {
                   Complete Verification <ChevronRight className="h-4 w-4" />
                 </Button>
               ) : tier.status === "COMPLETED" ? (
-                <div className="text-center text-xs font-bold uppercase tracking-wider text-[#0f766e]">
+                <div className="text-center text-xs font-bold uppercase tracking-wider text-[#047857]">
                   Step Completed
                 </div>
               ) : (
-                <div className="text-center text-xs font-bold uppercase tracking-wider text-[#9ca3af]">
+                <div className="text-center text-xs font-bold uppercase tracking-wider text-[var(--color-ink-muted)]">
                   Complete Previous Tiers First
                 </div>
               )}
@@ -176,8 +202,9 @@ function Tier2VerificationModal({ isOpen, onClose }: { isOpen: boolean; onClose:
         toast.success("Tier 2 Verified!", "Your Advanced Trust Badge is now active.");
         onClose();
       }
-    } catch (error: any) {
-      toast.error("Error", error.response?.data?.message || "Verification failed");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Verification failed";
+      toast.error("Error", message);
     } finally {
       setIsSubmitting(false);
     }
@@ -218,8 +245,8 @@ function Tier2VerificationModal({ isOpen, onClose }: { isOpen: boolean; onClose:
           />
         </div>
 
-        <div className="rounded-2xl border border-[#e5e7eb] p-5 space-y-4">
-          <h4 className="text-sm font-bold text-[#111827] flex items-center gap-2">
+        <div className="rounded-lg border border-[var(--color-line)] p-6 space-y-4">
+          <h4 className="text-sm font-bold text-[var(--foreground)] flex items-center gap-2">
             <Users className="h-4 w-4" /> Next of Kin Details
           </h4>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -271,7 +298,8 @@ function Tier3VerificationModal({ isOpen, onClose }: { isOpen: boolean; onClose:
         toast.success("TIER 3 COMPLETED!", "You are now a Platinum Verified user.");
         onClose();
       }
-    } catch (error: any) {
+    } catch (_error: unknown) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      // Biometric verification errors handled generically
       toast.error("Error", "Biometric verification failed");
     } finally {
       setIsSubmitting(false);

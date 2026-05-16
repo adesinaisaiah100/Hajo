@@ -8,10 +8,10 @@ export function Input({ label, className = "", ...props }: InputProps) {
   return (
     <label className="block space-y-2">
       {label ? (
-        <span className="text-sm font-semibold text-[#111827]">{label}</span>
+        <span className="text-sm font-semibold text-[var(--foreground)]">{label}</span>
       ) : null}
       <input
-        className={`w-full rounded-lg border-2 border-[#e5e7eb] bg-white px-4 py-3 text-sm text-[#111827] outline-none transition placeholder:text-[#d1d5db] focus:border-[#14b8a6] focus:ring-4 focus:ring-[rgba(20,184,166,0.1)] ${className}`}
+        className={`w-full rounded-lg border-2 border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none transition placeholder:text-[var(--color-ink-muted)] focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/10 ${className}`}
         {...props}
       />
     </label>

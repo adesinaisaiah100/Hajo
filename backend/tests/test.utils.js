@@ -11,51 +11,64 @@ const { prisma } = require('../src/config/database');
  * Create a test booking with customer, provider, and service
  */
 async function createTestBooking(overrides = {}) {
-  const customerId = overrides.customerId || `test_cust_${Date.now()}`;
-  const providerId = overrides.providerId || `test_prov_${Date.now()}`;
-  const serviceId = overrides.serviceId || `test_svc_${Date.now()}`;
+  const timestamp = Date.now() + Math.floor(Math.random() * 1000);
+  const customerId = overrides.customerId || `test_cust_${timestamp}`;
+  const providerId = overrides.providerId || `test_prov_${timestamp}`;
+  const serviceId = overrides.serviceId || `test_svc_${timestamp}`;
 
-  // Create customer user if not provided
-  if (!overrides.customerId) {
-    await prisma.user.create({
-      data: {
-        id: customerId,
-        phone: `+234${Math.random().toString().slice(2, 12)}`,
-        firstName: 'Test',
-        lastName: 'Customer',
-        role: 'CUSTOMER',
-        isVerified: true,
-      },
-    }).catch(() => {}); // Ignore if exists
-  }
+  // Create customer user
+  await prisma.user.upsert({
+    where: { id: customerId },
+    update: {},
+    create: {
+      id: customerId,
+      phone: `+234${Math.random().toString().slice(2, 12)}`,
+      firstName: 'Test',
+      lastName: 'Customer',
+      role: 'CUSTOMER',
+      isVerified: true,
+      verificationTier: 'TIER_1',
+    },
+  });
 
-  // Create provider user if not provided
-  if (!overrides.providerId) {
-    await prisma.user.create({
-      data: {
-        id: providerId,
-        phone: `+234${Math.random().toString().slice(2, 12)}`,
-        firstName: 'Test',
-        lastName: 'Artisan',
-        role: 'PROVIDER',
-        isVerified: true,
-      },
-    }).catch(() => {}); // Ignore if exists
-  }
+  // Create provider user
+  await prisma.user.upsert({
+    where: { id: providerId },
+    update: {},
+    create: {
+      id: providerId,
+      phone: `+234${Math.random().toString().slice(2, 12)}`,
+      firstName: 'Test',
+      lastName: 'Artisan',
+      role: 'PROVIDER',
+      isVerified: true,
+      verificationTier: 'TIER_1',
+    },
+  });
 
-  // Create service if not provided
-  if (!overrides.serviceId) {
-    await prisma.service.create({
-      data: {
-        id: serviceId,
-        providerId,
-        title: 'Test Service',
-        description: 'Test service description',
-        category: 'plumbing',
-        price: 50000,
-      },
-    }).catch(() => {}); // Ignore if exists
-  }
+  // Create provider record
+  await prisma.provider.upsert({
+    where: { userId: providerId },
+    update: {},
+    create: {
+      userId: providerId,
+      tradeName: 'Test Artisan Trade',
+    }
+  });
+
+  // Create service
+  await prisma.service.upsert({
+    where: { id: serviceId },
+    update: {},
+    create: {
+      id: serviceId,
+      providerId: (await prisma.provider.findUnique({ where: { userId: providerId } })).id,
+      title: 'Test Service',
+      description: 'Test service description',
+      category: 'Electrical', // Use a material category by default
+      price: 50000,
+    },
+  });
 
   // Create booking
   const booking = await prisma.booking.create({

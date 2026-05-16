@@ -43,6 +43,8 @@ export type ProviderProfile = {
   priceFrom: number;
   priceTo: number;
   bio: string;
+  avatarUrl: string;
+  heroImageUrl: string;
   skills: string[];
   languages: string[];
   matchReasons: string[];
@@ -108,6 +110,8 @@ const providerDirectory: ProviderProfile[] = [
     priceFrom: 12000,
     priceTo: 70000,
     bio: "Residential electrician focused on repairs, rewiring, and urgent callouts for apartments and small businesses.",
+    avatarUrl: "https://i.pravatar.cc/150?u=amina",
+    heroImageUrl: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&q=80&w=800",
     skills: ["Fault tracing", "Switch installation", "DB board servicing"],
     languages: ["English", "Yoruba"],
     matchReasons: [
@@ -168,6 +172,8 @@ const providerDirectory: ProviderProfile[] = [
     priceFrom: 15000,
     priceTo: 95000,
     bio: "Leak repair specialist handling pipe replacements, blocked drains, and emergency plumbing jobs.",
+    avatarUrl: "https://i.pravatar.cc/150?u=kunle",
+    heroImageUrl: "https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&q=80&w=800",
     skills: ["Pipe replacement", "Drain clearing", "Bathroom fittings"],
     languages: ["English", "Igbo"],
     matchReasons: [
@@ -220,6 +226,8 @@ const providerDirectory: ProviderProfile[] = [
     priceFrom: 18000,
     priceTo: 60000,
     bio: "Custom tailoring for women and corporate wear with quick measurement turnaround and fitting support.",
+    avatarUrl: "https://i.pravatar.cc/150?u=efe",
+    heroImageUrl: "https://images.unsplash.com/photo-1525507119028-ed4c629a60a3?auto=format&fit=crop&q=80&w=800",
     skills: ["Measurements", "Alterations", "Corporate wear"],
     languages: ["English", "Pidgin"],
     matchReasons: [

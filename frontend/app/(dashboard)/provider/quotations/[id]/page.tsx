@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/app/store/auth.store';
 import { useQuotation, useSendQuotation } from '@/app/hooks/useQuotations';
@@ -16,27 +15,20 @@ export default function ProviderQuotationPage() {
 
   const { data: quotation, isLoading, error } = useQuotation(quotationId);
   const sendQuotation = useSendQuotation();
-  const [isInitialized, setIsInitialized] = useState(false);
+  const isAuthorized = user?.role === 'PROVIDER';
 
-  useEffect(() => {
-    // Verify user is authenticated and is a provider
-    if (!user) {
-      router.push('/auth/login');
-      return;
-    }
-
-    if (user.role !== 'PROVIDER') {
-      router.push('/dashboard/customer');
-      return;
-    }
-
-    setIsInitialized(true);
-  }, [user, router]);
-
-  if (!isInitialized) {
+  if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-600">Loading...</div>
+      <div className="flex min-h-screen items-center justify-center bg-[var(--color-surface)]">
+        <div className="text-[var(--color-ink-muted)]">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthorized) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[var(--color-surface)]">
+        <div className="text-[var(--color-ink-muted)]">Loading...</div>
       </div>
     );
   }
@@ -64,16 +56,16 @@ export default function ProviderQuotationPage() {
     );
   }
 
-  if (quotation.status !== 'DRAFT' && quotation.status !== 'NEGOTIATING') {
+  if (quotation.status !== 'DRAFT' && quotation.status !== 'NEGOTIATING' && quotation.status !== 'REJECTED' && quotation.status !== 'SENT') {
     return (
       <div className="min-h-screen bg-gray-50 p-4">
         <div className="max-w-2xl mx-auto">
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 text-center">
             <p className="text-amber-700">
-              This quotation is no longer in draft status. Current status: {quotation.status}
+              This quotation is completed and cannot be edited. Current status: {quotation.status}
             </p>
-            <Button onClick={() => router.back()} className="mt-4">
-              Go Back
+            <Button onClick={() => router.push('/provider/bookings')} className="mt-4">
+              Back to Bookings
             </Button>
           </div>
         </div>
@@ -81,16 +73,24 @@ export default function ProviderQuotationPage() {
     );
   }
 
+  const isResending = quotation.status === 'REJECTED' || quotation.status === 'SENT';
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <Button variant="secondary" onClick={() => router.back()} className="mb-4">
+          <Button variant="secondary" onClick={() => router.push('/provider/bookings')} className="mb-4">
             ← Back to Bookings
           </Button>
-          <h1 className="text-3xl font-bold text-gray-900">Review Quotation</h1>
-          <p className="text-gray-600 mt-1">Review the AI-generated quotation and make any adjustments before sending to the customer.</p>
+          <h1 className="text-3xl font-bold text-gray-900">
+            {isResending ? 'Revise Quotation' : 'Review Quotation'}
+          </h1>
+          <p className="text-gray-600 mt-1">
+            {quotation.status === 'REJECTED' 
+              ? 'The customer rejected the previous quotation. You can send a revised one here.'
+              : 'Review the AI-generated quotation and make any adjustments before sending to the customer.'}
+          </p>
         </div>
 
         {/* Main Content */}
@@ -98,7 +98,11 @@ export default function ProviderQuotationPage() {
           {/* Review Form */}
           <div className="lg:col-span-2">
             <QuotationReviewForm
-              quotation={quotation}
+              quotation={{
+                draftMaterialsCost: Number(quotation.finalMaterialsCost || quotation.draftMaterialsCost),
+                draftLabourCost: Number(quotation.finalLabourCost || quotation.draftLabourCost),
+                draftDescription: quotation.finalDescription || quotation.draftDescription
+              }}
               isLoading={sendQuotation.isPending}
               onSubmit={async (data) => {
                 await sendQuotation.mutateAsync({
@@ -107,9 +111,9 @@ export default function ProviderQuotationPage() {
                   finalLabourCost: data.finalLabourCost,
                   description: data.description,
                 });
-                // Navigate to quotation view after sending
+                // Navigate to bookings after sending
                 setTimeout(() => {
-                  router.push(`/dashboard/provider/bookings`);
+                  router.push(`/provider/bookings`);
                 }, 1000);
               }}
             />

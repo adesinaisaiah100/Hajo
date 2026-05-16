@@ -132,14 +132,6 @@ describe('Quotation Service - Unit Tests', () => {
   describe('releaseLaborEscrow', () => {
     it('should change status to COMPLETED and set release time', async () => {
       const { booking } = await createTestBooking();
-      // Need provider record for totalEarnings increment test
-      await prisma.provider.create({
-        data: {
-          userId: booking.providerId,
-          tradeName: 'Test Trade'
-        }
-      });
-      
       const quotation = await createTestAcceptedQuotation(booking.id);
 
       const updated = await quotationService.releaseLaborEscrow(quotation.id);

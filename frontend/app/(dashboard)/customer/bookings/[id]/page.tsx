@@ -1,13 +1,16 @@
 "use client";
 
-import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
-import { CalendarClock, MapPin } from "lucide-react";
+import { useMemo, useState } from "react";
+import { CalendarClock, CheckCircle2, MapPin, MessageSquareText, Star } from "lucide-react";
 import { Button } from "@/app/components/ui/Button";
 import { EmptyState } from "@/app/components/shared/EmptyState";
-import { PaymentSummary } from "@/app/components/shared/PaymentSummary";
 import { useBooking, useCancelBooking, useCompleteBooking } from "@/app/hooks/useBookings";
-import { formatLongDate } from "@/app/lib/utils";
+import { cn, formatCurrency, formatLongDate } from "@/app/lib/utils";
+import { ScoreBadge } from "@/app/components/shared/ScoreBadge";
+import { getMockProvider } from "@/app/lib/mock-marketplace";
+
+const TIMELINE_STEPS = ["Requested", "Accepted", "In Progress", "Completed"] as const;
 
 export default function CustomerBookingDetailPage() {
   const params = useParams<{ id: string }>();
@@ -16,6 +19,41 @@ export default function CustomerBookingDetailPage() {
   const cancelMutation = useCancelBooking();
   const completeMutation = useCompleteBooking();
   const created = searchParams.get("created") === "1";
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
+
+  const provider = booking ? getMockProvider(booking.providerId) : null;
+
+  const timelineState = useMemo(() => {
+    if (!booking) {
+      return TIMELINE_STEPS.map((step) => ({ step, complete: false, timestamp: "Pending" }));
+    }
+
+    const map = {
+      Requested: true,
+      Accepted: ["ACCEPTED", "COMPLETED"].includes(booking.status),
+      "In Progress": ["ACCEPTED", "COMPLETED"].includes(booking.status),
+      Completed: booking.status === "COMPLETED",
+    } as Record<(typeof TIMELINE_STEPS)[number], boolean>;
+
+    return TIMELINE_STEPS.map((step) => {
+      const source = booking.timeline.find((item) => {
+        const label = item.label.toLowerCase();
+        if (step === "Requested") return label.includes("requested");
+        if (step === "Accepted") return label.includes("accepted") || label.includes("confirmation");
+        if (step === "In Progress") return label.includes("waiting") || label.includes("progress");
+        return label.includes("release") || label.includes("completed");
+      });
+
+      return {
+        step,
+        complete: map[step],
+        timestamp: source?.timestamp === "Pending" || !source?.timestamp ? "Pending" : formatLongDate(source.timestamp),
+      };
+    });
+  }, [booking]);
 
   if (!booking) {
     return (
@@ -27,97 +65,166 @@ export default function CustomerBookingDetailPage() {
     );
   }
 
+  const canShowQuotation = Boolean(booking.quotationId);
+  const isActive = ["ACCEPTED", "QUOTE_REQUESTED", "QUOTE_SENT", "NEGOTIATING"].includes(booking.status);
+  const isCancelled = booking.status === "CANCELLED";
+  const canReview = booking.status === "COMPLETED" && !reviewSubmitted;
+
   return (
-    <div className="grid gap-6 xl:grid-cols-[1fr_340px]">
+    <div className="space-y-6">
       <div className="space-y-6">
         {created ? (
-          <div className="rounded-3xl border border-[#bbf7d0] bg-[#f0fdf4] p-5 text-sm text-[#166534]">
+          <div className="rounded-lg border border-[var(--color-line)] bg-[var(--color-surface)] p-5 text-sm text-[var(--color-success)]">
             Booking request created successfully. The provider can now review it and the wallet hold will reflect in your transaction history.
           </div>
         ) : null}
 
-        <section className="rounded-3xl border border-[#e5e7eb] bg-white p-6 shadow-sm">
-          <div className="flex flex-wrap items-start justify-between gap-3">
+        <section className="rounded-lg border border-[var(--color-line)] bg-white p-4 shadow-sm">
+          <a
+            href={`/providers/${booking.providerId}`}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-3"
+          >
+            <div className="h-14 w-14 rounded-lg bg-[var(--color-surface)]" />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-base font-bold text-[var(--foreground)]">{booking.providerName}</p>
+              <p className="text-sm text-[var(--color-ink-muted)]">{booking.providerTrade}</p>
+            </div>
+            {provider ? <ScoreBadge tier={provider.tier} /> : null}
+          </a>
+        </section>
+
+        <section className="rounded-lg border border-[var(--color-line)] bg-white p-6 shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#14b8a6]">
-                Booking {booking.id.toUpperCase()}
-              </p>
-              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[#111827]">
+              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[var(--foreground)]">
                 {booking.serviceTitle}
               </h1>
-              <p className="mt-2 text-sm text-[#6b7280]">
+              <p className="mt-2 text-sm text-[var(--color-ink-muted)]">
                 {booking.providerName} • {booking.providerTrade}
               </p>
             </div>
-            <span className="rounded-full bg-[#f3f4f6] px-3 py-1 text-sm font-semibold text-[#374151]">
+            <span className="rounded-full bg-[var(--color-surface)] px-3 py-1 text-sm font-semibold text-[var(--color-ink-muted)]">
               {booking.status}
             </span>
           </div>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl bg-[#f9fafb] p-4 text-sm text-[#6b7280]">
-              <p className="font-semibold text-[#111827]">Schedule</p>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="rounded-lg bg-[var(--color-surface)] p-4 text-sm text-[var(--color-ink-muted)]">
+              <p className="font-semibold text-[var(--foreground)]">Schedule</p>
               <p className="mt-2 inline-flex items-center gap-2">
                 <CalendarClock className="h-4 w-4" />
                 {formatLongDate(booking.scheduledAt)}
               </p>
             </div>
-            <div className="rounded-2xl bg-[#f9fafb] p-4 text-sm text-[#6b7280]">
-              <p className="font-semibold text-[#111827]">Location</p>
+            <div className="rounded-lg bg-[var(--color-surface)] p-4 text-sm text-[var(--color-ink-muted)]">
+              <p className="font-semibold text-[var(--foreground)]">Location</p>
               <p className="mt-2 inline-flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
                 {booking.location}
               </p>
             </div>
+
+            <div className="rounded-lg bg-[var(--color-surface)] p-4 text-sm text-[var(--color-ink-muted)]">
+              <p className="font-semibold text-[var(--foreground)]">Amount paid</p>
+              <p className="mt-2 text-base font-bold text-[var(--foreground)]">{formatCurrency(booking.amount, booking.currency)}</p>
+            </div>
           </div>
 
-          <div className="mt-6 rounded-2xl border border-[#e5e7eb] bg-white p-4">
-            <p className="text-sm font-semibold text-[#111827]">Job notes</p>
-            <p className="mt-2 text-sm leading-6 text-[#6b7280]">{booking.notes}</p>
+          <div className="mt-6 rounded-lg border border-[var(--color-line)] bg-white p-4">
+            <p className="text-sm font-semibold text-[var(--foreground)]">Customer description</p>
+            <p className="mt-2 text-sm leading-6 text-[var(--color-ink-muted)]">{booking.notes}</p>
           </div>
+
+          <div className="mt-6 rounded-lg border border-[#fcd34d] bg-[#fffbeb] p-4 text-sm text-[#92400e]">
+            <p className="font-semibold">{formatCurrency(booking.amount, booking.currency)} is held securely in escrow.</p>
+            <p className="mt-1">
+              It will release to the artisan only when you confirm the job is complete.
+            </p>
+          </div>
+
+          {canShowQuotation ? (
+            <details className="mt-6 rounded-lg border border-[var(--color-line)] bg-white p-4">
+              <summary className="cursor-pointer text-sm font-semibold text-[var(--foreground)]">View Quotation</summary>
+              <div className="mt-4 grid gap-2 text-sm text-[var(--color-ink-muted)]">
+                <div className="flex items-center justify-between rounded bg-[var(--color-surface)] px-3 py-2">
+                  <span>Labour</span>
+                  <span className="font-semibold text-[var(--foreground)]">{formatCurrency(Math.floor(booking.amount * 0.6))}</span>
+                </div>
+                <div className="flex items-center justify-between rounded bg-[var(--color-surface)] px-3 py-2">
+                  <span>Materials</span>
+                  <span className="font-semibold text-[var(--foreground)]">{formatCurrency(Math.floor(booking.amount * 0.3))}</span>
+                </div>
+                <div className="flex items-center justify-between rounded bg-[var(--color-surface)] px-3 py-2">
+                  <span>Platform fee</span>
+                  <span className="font-semibold text-[var(--foreground)]">{formatCurrency(Math.floor(booking.amount * 0.1))}</span>
+                </div>
+                <div className="flex items-center justify-between border-t border-[var(--color-line)] pt-2">
+                  <span className="font-semibold text-[var(--foreground)]">Total</span>
+                  <span className="font-semibold text-[var(--foreground)]">{formatCurrency(booking.amount)}</span>
+                </div>
+              </div>
+            </details>
+          ) : null}
 
           <div className="mt-6">
-            <h2 className="text-lg font-semibold text-[#111827]">Booking timeline</h2>
+            <h2 className="text-lg font-semibold text-[var(--foreground)]">Status timeline</h2>
             <div className="mt-4 space-y-4">
-              {booking.timeline.map((step) => (
-                <div key={step.label} className="flex gap-3">
-                  <div className={`mt-1 h-3.5 w-3.5 rounded-full ${step.complete ? "bg-[#14b8a6]" : "bg-[#d1d5db]"}`} />
+              {timelineState.map((step, index) => (
+                <div key={step.step} className="flex gap-3">
+                  <div className="relative mt-1 flex flex-col items-center">
+                    <div
+                      className={cn(
+                        "h-5 w-5 rounded-full border-2",
+                        step.complete ? "border-[var(--color-brand)] bg-[var(--color-brand)] text-white" : "border-[var(--color-line)] bg-white text-transparent",
+                      )}
+                    >
+                      <CheckCircle2 className="h-4 w-4" />
+                    </div>
+                    {index < timelineState.length - 1 ? (
+                      <span className="mt-1 h-8 w-px bg-[var(--color-line)]" />
+                    ) : null}
+                  </div>
                   <div>
-                    <p className="text-sm font-semibold text-[#111827]">{step.label}</p>
-                    <p className="mt-1 text-sm text-[#6b7280]">{step.timestamp}</p>
+                    <p className="text-sm font-semibold text-[var(--foreground)]">{step.step}</p>
+                    <p className="mt-1 text-sm text-[var(--color-ink-muted)]">{step.timestamp}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
         </section>
-      </div>
 
-      <aside className="space-y-4 xl:sticky xl:top-8 xl:self-start">
-        <PaymentSummary amount={booking.amount} currency={booking.currency}>
-          <Link href="/customer/wallet" className="text-sm font-semibold text-[#14b8a6]">
-            View wallet activity
-          </Link>
-        </PaymentSummary>
-
-        <div className="rounded-3xl border border-[#e5e7eb] bg-white p-5 shadow-sm">
-          <h3 className="text-base font-semibold text-[#111827]">Actions</h3>
-          <div className="mt-4 flex flex-col gap-3">
-            {(booking.status === "QUOTE_SENT" || booking.status === "NEGOTIATING") && booking.quotationId ? (
-              <Link href={`/customer/quotations/${booking.quotationId}`}>
-                <Button className="w-full">
-                  Review Quotation
-                </Button>
-              </Link>
-            ) : null}
-            {booking.status === "ACCEPTED" ? (
-              <Button
-                onClick={() => completeMutation.mutate(booking.id)}
-                isLoading={completeMutation.isPending}
-              >
-                Confirm completion
+        <section className="rounded-lg border border-[var(--color-line)] bg-white p-5 shadow-sm">
+          <h3 className="text-base font-semibold text-[var(--foreground)]">Actions</h3>
+          <div className="mt-4 flex flex-wrap gap-3">
+            {isActive ? (
+              <Button onClick={() => completeMutation.mutate(booking.id)} isLoading={completeMutation.isPending}>
+                Mark as Complete
               </Button>
             ) : null}
+
+            {canShowQuotation ? (
+              <Button variant="secondary" href={`/customer/bookings/${booking.id}/quotation`}>
+                View Quotation
+              </Button>
+            ) : null}
+
+            {isActive ? (
+              <Button
+                variant="secondary"
+                className="border-[#ef4444] text-[#b91c1c] hover:border-[#b91c1c]"
+              >
+                <MessageSquareText className="h-4 w-4" />
+                Raise Dispute
+              </Button>
+            ) : null}
+
+            {canReview ? (
+              <Button onClick={() => setShowReviewModal(true)}>Leave a Review</Button>
+            ) : null}
+
             {booking.status === "PENDING" ? (
               <Button
                 variant="secondary"
@@ -128,8 +235,67 @@ export default function CustomerBookingDetailPage() {
               </Button>
             ) : null}
           </div>
+
+          {isCancelled ? (
+            <p className="mt-4 rounded-lg bg-[var(--color-surface)] p-3 text-sm text-[var(--color-ink-muted)]">
+              This booking was cancelled. Your refund has been returned to your wallet.
+            </p>
+          ) : null}
+
+          {reviewSubmitted ? (
+            <p className="mt-4 rounded-lg bg-[#ecfdf5] p-3 text-sm text-[#047857]">
+              Your review has been submitted.
+            </p>
+          ) : null}
+        </section>
+      </div>
+
+      {showReviewModal ? (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center">
+          <div className="w-full max-w-md rounded-lg border border-[var(--color-line)] bg-white p-5 shadow-xl">
+            <h3 className="text-lg font-semibold text-[var(--foreground)]">Leave a Review</h3>
+            <div className="mt-4 flex items-center gap-2">
+              {Array.from({ length: 5 }).map((_, index) => {
+                const value = index + 1;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setRating(value)}
+                    className="rounded p-1"
+                    aria-label={`Rate ${value}`}
+                  >
+                    <Star className={cn("h-6 w-6", value <= rating ? "fill-amber-400 text-amber-400" : "text-gray-300")} />
+                  </button>
+                );
+              })}
+            </div>
+
+            <textarea
+              value={comment}
+              onChange={(event) => setComment(event.target.value)}
+              rows={4}
+              placeholder="Share your experience (optional)"
+              className="mt-4 w-full rounded-lg border border-[var(--color-line)] p-3 text-sm outline-none focus:border-[var(--color-brand)]"
+            />
+
+            <div className="mt-4 flex justify-end gap-2">
+              <Button variant="secondary" onClick={() => setShowReviewModal(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  setReviewSubmitted(true);
+                  setShowReviewModal(false);
+                }}
+                disabled={rating === 0}
+              >
+                Submit Review
+              </Button>
+            </div>
+          </div>
         </div>
-      </aside>
+      ) : null}
     </div>
   );
 }

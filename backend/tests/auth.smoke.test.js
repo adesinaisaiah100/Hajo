@@ -24,6 +24,8 @@ function createMockPrisma() {
           id: `user_${users.size + 1}`,
           tokenVersion: 0,
           isVerified: false,
+          verificationTier: 'TIER_0',
+          squadAccountNo: null,
           provider: null,
           ...data
         };
@@ -87,13 +89,11 @@ test('register sends OTP and creates a provider profile', async () => {
   assert.equal(otpStore.has('+2348012345678'), true);
 });
 
-test('verifyOtp issues tokens and assigns a virtual account', async () => {
+test('verifyOtp issues tokens but NO virtual account', async () => {
   const prisma = createMockPrisma();
   const authService = createAuthService({ prisma });
 
   const registration = await authService.register({
-    firstName: 'Musa',
-    lastName: 'Ade',
     phone: '+2348098765432',
     role: 'CUSTOMER'
   });
@@ -106,5 +106,31 @@ test('verifyOtp issues tokens and assigns a virtual account', async () => {
   assert.equal(typeof verifyResult.accessToken, 'string');
   assert.equal(typeof verifyResult.refreshToken, 'string');
   assert.equal(verifyResult.user.isVerified, true);
-  assert.equal(typeof verifyResult.user.squadAccountNo, 'string');
+  assert.equal(verifyResult.user.verificationTier, 'TIER_0');
+  assert.equal(verifyResult.user.squadAccountNo, null);
+});
+
+test('verifyTier1 assigns a virtual account and promotes to TIER_1', async () => {
+  const prisma = createMockPrisma();
+  const authService = createAuthService({ prisma });
+
+  const registration = await authService.register({
+    phone: '+2348055555555',
+    role: 'PROVIDER'
+  });
+
+  const verifyResult = await authService.verifyOtp({
+    phone: '+2348055555555',
+    otp: registration.debugOtp
+  });
+
+  const tier1Result = await authService.verifyTier1(verifyResult.user.id, {
+    firstName: 'Samuel',
+    lastName: 'Test',
+    email: 'samuel@example.com'
+  });
+
+  assert.equal(tier1Result.verificationTier, 'TIER_1');
+  assert.equal(typeof tier1Result.squadAccountNo, 'string');
+  assert.equal(tier1Result.firstName, 'Samuel');
 });

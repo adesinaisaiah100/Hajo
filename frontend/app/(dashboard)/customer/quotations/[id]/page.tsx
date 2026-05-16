@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/app/store/auth.store';
 import { useQuotation, useAcceptQuotation, useRejectQuotation, useAddNegotiationMessage } from '@/app/hooks/useQuotations';
@@ -18,24 +17,8 @@ export default function CustomerQuotationPage() {
   const acceptQuotation = useAcceptQuotation();
   const rejectQuotation = useRejectQuotation();
   const addNegotiationMessage = useAddNegotiationMessage();
-  const [isInitialized, setIsInitialized] = useState(false);
 
-  useEffect(() => {
-    // Verify user is authenticated and is a customer
-    if (!user) {
-      router.push('/auth/login');
-      return;
-    }
-
-    if (user.role !== 'CUSTOMER') {
-      router.push('/dashboard/provider');
-      return;
-    }
-
-    setIsInitialized(true);
-  }, [user, router]);
-
-  if (!isInitialized) {
+  if (!user) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-gray-600">Loading...</div>
@@ -71,7 +54,7 @@ export default function CustomerQuotationPage() {
       <div className="min-h-screen bg-gray-50 p-4">
         <div className="max-w-2xl mx-auto">
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 text-center">
-            <p className="text-amber-700">The artisan hasn't sent a final quotation yet. Please check back later.</p>
+            <p className="text-amber-700">The artisan hasn&apos;t sent a final quotation yet. Please check back later.</p>
             <Button onClick={() => router.back()} className="mt-4">
               Go Back
             </Button>

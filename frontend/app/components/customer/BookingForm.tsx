@@ -9,6 +9,9 @@ import { Button } from "@/app/components/ui/Button";
 import { Input } from "@/app/components/ui/Input";
 import { PaymentSummary } from "@/app/components/shared/PaymentSummary";
 import { useCreateBooking } from "@/app/hooks/useBookings";
+import { useAuthStore } from "@/app/store/auth.store";
+import { toast } from "@/app/store/toast.store";
+import { AlertCircle } from "lucide-react";
 
 const bookingSchema = z.object({
   serviceId: z.string().min(1, "Select a service"),
@@ -22,6 +25,7 @@ type BookingValues = z.infer<typeof bookingSchema>;
 
 export function BookingForm({ provider }: { provider: ProviderProfile }) {
   const router = useRouter();
+  const { user } = useAuthStore();
   const mutation = useCreateBooking();
   const firstService = provider.services[0];
   const form = useForm<BookingValues>({
@@ -43,6 +47,19 @@ export function BookingForm({ provider }: { provider: ProviderProfile }) {
     provider.services.find((service) => service.id === selectedServiceId) ?? firstService;
 
   async function onSubmit(values: BookingValues) {
+    // Check if user has virtual account (verified)
+    if (!user?.squadAccountNo) {
+      toast.warning(
+        "Verification Required",
+        "You need to create a virtual account to make bookings. Complete your Tier 1 verification to continue."
+      );
+      // Navigate to verification page after a short delay
+      setTimeout(() => {
+        router.push("/customer/verification");
+      }, 1000);
+      return;
+    }
+
     const scheduledAt = new Date(`${values.date}T${values.time}:00`).toISOString();
     const booking = await mutation.mutateAsync({
       providerId: provider.id,
@@ -121,6 +138,26 @@ export function BookingForm({ provider }: { provider: ProviderProfile }) {
 
         <div className="rounded-3xl border border-[#e5e7eb] bg-white p-5 shadow-sm">
           <h3 className="text-base font-semibold text-[#111827]">Before you confirm</h3>
+          {!user?.squadAccountNo && (
+            <div className="mt-4 rounded-2xl border border-[#fca5a5] bg-[#fef2f2] p-4">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 flex-shrink-0 text-[#dc2626] mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-[#991b1b]">Verification required</p>
+                  <p className="mt-1 text-sm text-[#7f1d1d]">
+                    You need to complete Tier 1 verification to create a virtual account and make bookings.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => router.push("/customer/verification")}
+                    className="mt-3 text-sm font-semibold text-[#dc2626] hover:text-[#991b1b] underline"
+                  >
+                    Go to Trust Center →
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           <ul className="mt-4 space-y-3 text-sm leading-6 text-[#6b7280]">
             <li>Confirm the provider can access the location at the selected time.</li>
             <li>Use the notes field for gate codes, landmarks, or urgent context.</li>

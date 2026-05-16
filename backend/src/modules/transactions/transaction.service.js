@@ -60,14 +60,52 @@ function createTransactionService({ prisma = getPrismaClient() } = {}) {
       monthlyEarnings,
       topServices: topServicesResult,
       recentTransactions
-    };
+    }; 
+  }
+
+  async function createTransaction(data) {
+    const { userId, bookingId, type, amount, currency, squadRef, squadEvent, metadata } = data;
+    
+    // Simple idempotency check
+    if (squadRef) {
+      const existing = await prisma.transaction.findUnique({ where: { squadRef } });
+      if (existing) return existing;
+    }  
+
+    return prisma.transaction.create({
+      data: {
+        userId,
+        bookingId,
+        type,
+        amount,
+        currency: currency || 'NGN',
+        squadRef,
+        squadEvent,
+        metadata: metadata || {},
+        status: 'SUCCESS' // For demo purposes, we mark them as SUCCESS immediately
+      }
+    });
+  }
+
+  async function findBySquadRef(squadRef) {
+    return prisma.transaction.findUnique({ where: { squadRef } });
+  }
+
+  async function updateStatus(squadRef, status) {
+    return prisma.transaction.update({
+      where: { squadRef },
+      data: { status }
+    });
   }
 
   return {
     getUserTransactionSummary,
     monthlyEarningsSummary,
     topServices,
-    getProviderAnalytics
+    getProviderAnalytics,
+    createTransaction,
+    findBySquadRef,
+    updateStatus
   };
 }
 

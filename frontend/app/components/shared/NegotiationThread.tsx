@@ -25,12 +25,12 @@ export function NegotiationThread({
 }: NegotiationThreadProps) {
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg p-6 border border-gray-200">
+      <div className="bg-white rounded-lg p-6 border border-[var(--color-line)]">
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
             <div key={i} className="animate-pulse">
-              <div className="h-4 bg-gray-200 rounded w-24 mb-2" />
-              <div className="h-16 bg-gray-100 rounded" />
+              <div className="h-4 bg-[var(--color-surface)] rounded w-24 mb-2" />
+              <div className="h-16 bg-[var(--color-surface)]/50 rounded" />
             </div>
           ))}
         </div>
@@ -40,20 +40,20 @@ export function NegotiationThread({
 
   if (messages.length === 0) {
     return (
-      <div className="bg-gray-50 rounded-lg p-6 border border-gray-200 text-center">
-        <p className="text-sm text-gray-600">No messages yet. Start negotiating to see messages here.</p>
+      <div className="bg-[var(--color-surface)] rounded-lg p-6 border border-[var(--color-line)] text-center">
+        <p className="text-sm text-[var(--color-ink-muted)]">No messages yet. Start negotiating to see messages here.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg p-6 border border-gray-200">
+    <div className="bg-white rounded-lg p-6 border border-[var(--color-line)]">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-gray-900">Negotiation Thread</h3>
+        <h3 className="font-semibold text-[var(--foreground)]">Negotiation Thread</h3>
         {isPolling && (
           <div className="flex items-center gap-2">
-            <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            <span className="text-xs text-gray-500">Live polling</span>
+            <span className="inline-block w-2 h-2 bg-[#10b981] rounded-full animate-pulse" />
+            <span className="text-xs text-[var(--color-ink-muted)]">Live polling</span>
           </div>
         )}
       </div>
@@ -69,8 +69,8 @@ export function NegotiationThread({
               <div
                 className={`max-w-xs px-4 py-3 rounded-lg ${
                   isCurrentUser
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 text-gray-900'
+                    ? 'bg-[var(--color-brand)] text-white'
+                    : 'bg-[var(--color-surface)] text-[var(--foreground)]'
                 }`}
               >
                 <p className="text-xs opacity-75 mb-1">
@@ -79,7 +79,7 @@ export function NegotiationThread({
                 <p className="text-sm break-words">{msg.message}</p>
 
                 {msg.suggestedCost && (
-                  <div className={`mt-2 pt-2 border-t ${isCurrentUser ? 'border-blue-400' : 'border-gray-300'}`}>
+                  <div className={`mt-2 pt-2 border-t ${isCurrentUser ? 'border-[var(--color-brand)]/40' : 'border-[var(--color-line)]'}`}>
                     <p className="text-xs opacity-75">Counter-offer:</p>
                     <p className="text-sm font-semibold">₦{msg.suggestedCost.toLocaleString()}</p>
                   </div>
@@ -97,7 +97,7 @@ export function NegotiationThread({
       </div>
 
       {isPolling && (
-        <div className="mt-4 text-center text-xs text-gray-500">
+        <div className="mt-4 text-center text-xs text-[var(--color-ink-muted)]">
           Messages update automatically every 4 seconds
         </div>
       )}

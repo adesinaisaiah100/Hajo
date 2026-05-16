@@ -1,4 +1,5 @@
 const axios = require('axios');
+const { getEnv } = require('../../config/env');
 
 function parseGeminiResponse(response) {
   const text = response?.data?.candidates?.[0]?.content?.parts?.map((part) => part.text || '').join('') || '';
@@ -13,12 +14,13 @@ function parseGeminiResponse(response) {
   }
 }
 
-function createGeminiClient({
-  apiKey = process.env.GOOGLE_API_KEY,
-  model = process.env.GEMINI_MODEL || 'gemini-2.0-flash',
-  apiBase = process.env.GEMINI_API_BASE || 'https://generativelanguage.googleapis.com/v1beta'
-} = {}) {
+function createGeminiClient() {
   async function generateStructuredResponse(prompt) {
+    const env = getEnv();
+    const apiKey = env.GOOGLE_API_KEY;
+    const model = env.GEMINI_MODEL;
+    const apiBase = env.GEMINI_API_BASE;
+
     if (!apiKey) {
       return null;
     }

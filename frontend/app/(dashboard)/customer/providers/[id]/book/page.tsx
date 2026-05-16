@@ -12,13 +12,13 @@ export default async function BookProviderPage({
   return (
     <div className="space-y-6">
       <div className="max-w-3xl">
-        <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#14b8a6]">
+        <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--color-brand)]">
           Booking request
         </p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[#111827]">
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[var(--foreground)]">
           Book {provider.name}
         </h1>
-        <p className="mt-2 text-sm leading-6 text-[#6b7280]">
+        <p className="mt-2 text-sm leading-6 text-[var(--color-ink-muted)]">
           Confirm the service, schedule, and location before the request moves into escrow.
         </p>
       </div>

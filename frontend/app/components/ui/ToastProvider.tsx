@@ -2,18 +2,10 @@
 
 import { useToastStore } from "@/app/store/toast.store";
 import { CheckCircle2, AlertCircle, Info, X } from "lucide-react";
-import { useEffect, useState } from "react";
 
 export function ToastProvider() {
   const toasts = useToastStore((state) => state.toasts);
   const removeToast = useToastStore((state) => state.removeToast);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return null;
 
   return (
     <div className="fixed bottom-4 right-0 left-0 sm:left-auto sm:right-4 z-50 flex flex-col gap-2 w-full sm:w-[350px] px-4 pointer-events-none">

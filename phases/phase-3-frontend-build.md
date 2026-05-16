@@ -154,3 +154,29 @@ This keeps the home page simple while auth state resolves.
 - Layout consistency across route groups should be reviewed
 - Shared components should avoid duplicated business logic
 - The UX should stay responsive on both desktop and mobile widths
+
+## Customer UX Expansion (May 2026)
+
+### Scope covered
+
+Implemented the complete customer-facing marketplace workflow for discovery, search, bookings, wallet, profile, and notifications with mobile-first behavior and dashboard parity with provider flows.
+
+### Frontend files updated
+
+- `frontend/app/(dashboard)/customer/page.tsx` - redesigned home with greeting/wallet/notifications, AI search, category chips, near-you cards, and conditional recent bookings strip.
+- `frontend/app/search/page.tsx` - rebuilt search results with persistent query bar, editable filters, active filter states, AI match reason bands, skeletons, and empty state.
+- `frontend/app/(dashboard)/customer/bookings/page.tsx` - tabbed booking states (Active/Pending/Completed/Cancelled) with badges and per-tab empty messaging.
+- `frontend/app/(dashboard)/customer/bookings/[id]/page.tsx` - richer booking detail page with artisan mini-card, escrow callout, timeline, quotation section, and status-aware actions.
+- `frontend/app/(dashboard)/customer/wallet/page.tsx` - balance hero, inline fund-wallet block, escrow hold indicator, date-filtered transaction history.
+- `frontend/app/(dashboard)/customer/profile/page.tsx` - customer profile editing, account funding info, verification state, sticky save control.
+- `frontend/app/components/layout/DashboardShell.tsx` - customer notifications nav entry and bell routing.
+
+### New frontend files
+
+- `frontend/app/(dashboard)/customer/notifications/page.tsx` - notifications inbox with unread styles, mark-all-read, and deep links.
+- `frontend/app/(dashboard)/customer/bookings/[id]/quotation/page.tsx` - booking-level quotation access route.
+- `frontend/app/(dashboard)/customer/bookings/new/pay/page.tsx` - payment confirmation route UI for escrow-backed booking flow.
+
+### Validation
+
+- ESLint passed on all touched customer files after updates.

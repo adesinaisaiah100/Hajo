@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Lightbulb, TrendingUp, MapPin, Clock, RefreshCw } from "lucide-react";
+import { TrendingUp, MapPin, Clock, RefreshCw } from "lucide-react";
 import { Button } from "@/app/components/ui/Button";
 
 export default function ProviderInsightsPage() {
@@ -46,13 +46,13 @@ export default function ProviderInsightsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#111827]">AI Business Insights</h1>
-          <p className="mt-1 text-sm text-[#6b7280]">
+          <h1 className="text-2xl font-bold text-[var(--foreground)]">AI Business Insights</h1>
+          <p className="mt-1 text-sm text-[var(--color-ink-muted)]">
             Personalized tips to grow your business based on your performance.
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-xs text-[#6b7280]">Last refreshed: 2 hours ago</span>
+          <span className="text-xs text-[var(--color-ink-muted)]">Last refreshed: 2 hours ago</span>
           <Button 
             variant="outline" 
             onClick={handleRefresh} 
@@ -69,18 +69,18 @@ export default function ProviderInsightsPage() {
         {insights.map((insight) => {
           const Icon = insight.icon;
           return (
-            <div key={insight.id} className="flex flex-col justify-between rounded-2xl border border-[#e5e7eb] bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md">
+            <div key={insight.id} className="flex flex-col justify-between rounded-lg border border-[var(--color-line)] bg-white p-6 shadow-sm transition-all hover:shadow-md">
               <div>
-                <div className={`mb-4 inline-flex rounded-full p-3 ${insight.bg} ${insight.color}`}>
+                <div className="mb-4 inline-flex rounded-full bg-[var(--color-surface)] p-3 text-[var(--color-brand)]">
                   <Icon className="h-6 w-6" />
                 </div>
-                <h3 className="text-lg font-bold text-[#111827]">{insight.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-[#6b7280]">
+                <h3 className="text-lg font-bold text-[var(--foreground)]">{insight.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-[var(--color-ink-muted)]">
                   {insight.description}
                 </p>
               </div>
-              <div className="mt-6 pt-4 border-t border-[#f3f4f6]">
-                <button className="text-sm font-semibold text-[#14b8a6] hover:text-[#0d9488] transition-colors group flex items-center gap-1">
+              <div className="mt-6 pt-4 border-t border-[var(--color-line)]">
+                <button className="text-sm font-semibold text-[var(--color-brand)] hover:text-[var(--color-brand-strong)] transition-colors group flex items-center gap-1">
                   {insight.action}
                   <span className="transition-transform group-hover:translate-x-1">→</span>
                 </button>
@@ -90,9 +90,9 @@ export default function ProviderInsightsPage() {
         })}
       </div>
 
-      <div className="mt-8 rounded-2xl bg-[#f9fafb] p-6 text-center border border-[#e5e7eb]">
-        <h3 className="text-sm font-semibold text-[#111827]">How does this work?</h3>
-        <p className="mt-1 text-sm text-[#6b7280] max-w-2xl mx-auto">
+      <div className="mt-8 rounded-lg bg-[var(--color-surface)] p-6 text-center border border-[var(--color-line)]">
+        <h3 className="text-sm font-semibold text-[var(--foreground)]">How does this work?</h3>
+        <p className="mt-1 text-sm text-[var(--color-ink-muted)] max-w-2xl mx-auto">
           Hajo uses secure AI to analyze your booking history, customer reviews, and market trends to generate these insights. They update automatically every 24 hours to help you optimize your earnings.
         </p>
       </div>

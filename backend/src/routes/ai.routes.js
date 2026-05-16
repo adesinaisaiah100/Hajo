@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { getInsights, getScore } = require('../modules/ai/ai.controller');
+const { getInsights, getScore, matchProviders } = require('../modules/ai/ai.controller');
 const { requireAuth, requireRole } = require('../middleware/auth');
 
+router.post('/match', matchProviders);
 router.get('/insights', requireAuth, requireRole('PROVIDER'), getInsights);
 router.get('/score', requireAuth, requireRole('PROVIDER'), getScore);
 

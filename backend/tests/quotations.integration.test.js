@@ -65,10 +65,14 @@ describe('Integration: Quotation Workflow', () => {
         scheduledAt: new Date(),
       });
 
-      // 3. Verify booking status is QUOTE_REQUESTED
-      assert.strictEqual(booking.status, 'QUOTE_REQUESTED');
+      // 3. Wait for async quotation generation (Small delay for demo/test)
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-      // 4. Verify quotation was created
+      // 4. Verify booking status is QUOTE_REQUESTED
+      const updatedBooking = await prisma.booking.findUnique({ where: { id: booking.id } });
+      assert.strictEqual(updatedBooking.status, 'QUOTE_REQUESTED');
+
+      // 5. Verify quotation was created
       const quotation = await prisma.quotation.findUnique({
         where: { bookingId: booking.id },
       });

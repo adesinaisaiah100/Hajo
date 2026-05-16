@@ -1,5 +1,6 @@
 const { runEscrowTimeoutJob } = require('./escrowTimeout.job');
 const { runScoreRefreshJob } = require('./scoreRefresh.job');
+const { runPendingTimeoutJob } = require('./pendingTimeout.job');
 const cron = require('node-cron');
 
 function bootstrapJobs() {
@@ -10,6 +11,16 @@ function bootstrapJobs() {
       await runEscrowTimeoutJob();
     } catch (error) {
       console.error('[Jobs] Escrow timeout job failed:', error);
+    }
+  });
+
+  // Run pending timeout job every hour
+  cron.schedule('30 * * * *', async () => {
+    console.log('[Jobs] Running pending timeout job');
+    try {
+      await runPendingTimeoutJob();
+    } catch (error) {
+      console.error('[Jobs] Pending timeout job failed:', error);
     }
   });
 

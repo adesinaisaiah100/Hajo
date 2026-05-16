@@ -1,7 +1,7 @@
-const prisma = require('../../config/database');
+const { prisma } = require('../../config/database');
 const { geminiClient } = require('../../integrations/gemini/gemini.client');
 const { generateDeterministicQuotation } = require('../../utils/quotation.utils');
-const { AppError } = require('../../utils/asyncHandler');
+const { AppError } = require('../../middleware/error');
 
 /**
  * Generate AI-drafted quotation for a booking
@@ -72,8 +72,8 @@ async function sendQuotation(quotationId, finalMaterialsCost, finalLabourCost, d
       throw new AppError('Quotation not found', 404);
     }
 
-    if (quotation.status !== 'DRAFT') {
-      throw new AppError('Only DRAFT quotations can be sent', 400);
+    if (quotation.status !== 'DRAFT' && quotation.status !== 'REJECTED') {
+      throw new AppError('Only DRAFT or REJECTED quotations can be sent', 400);
     }
 
     if (!finalMaterialsCost || !finalLabourCost || finalMaterialsCost <= 0 || finalLabourCost <= 0) {
@@ -93,7 +93,7 @@ async function sendQuotation(quotationId, finalMaterialsCost, finalLabourCost, d
       include: { messages: true },
     });
 
-    // Update booking status to QUOTE_SENT
+    // Update booking status to QUOTE_SENT (even if it was CANCELLED due to previous rejection)
     await prisma.booking.update({
       where: { id: quotation.bookingId },
       data: { status: 'QUOTE_SENT' },

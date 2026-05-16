@@ -1,6 +1,7 @@
 const asyncHandler = require('../../utils/asyncHandler');
 const { getProviderInsights } = require('./insights.service');
 const { getProviderScoreBreakdown } = require('./scoring.service');
+const { matchProviders } = require('./matching.service');
 
 async function handleGetInsights(req, res) {
   const forceRefresh = req.query.refresh === 'true';
@@ -13,7 +14,14 @@ async function handleGetScore(req, res) {
   res.status(200).json({ success: true, score });
 }
 
+async function handleMatchProviders(req, res) {
+  const { query, city, minRating, limit } = req.body;
+  const results = await matchProviders(query, { city, minRating, limit });
+  res.status(200).json({ success: true, data: results });
+}
+
 module.exports = {
   getInsights: asyncHandler(handleGetInsights),
-  getScore: asyncHandler(handleGetScore)
+  getScore: asyncHandler(handleGetScore),
+  matchProviders: asyncHandler(handleMatchProviders)
 };

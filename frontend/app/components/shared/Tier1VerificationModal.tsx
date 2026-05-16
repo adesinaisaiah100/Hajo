@@ -41,8 +41,8 @@ export function Tier1VerificationModal({ isOpen, onClose }: Tier1VerificationMod
         );
         onClose();
       }
-    } catch (error: any) {
-      const message = error.response?.data?.message || "Verification failed. Please try again.";
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Verification failed. Please try again.";
       toast.error("Verification Error", message);
     } finally {
       setIsSubmitting(false);
@@ -51,13 +51,13 @@ export function Tier1VerificationModal({ isOpen, onClose }: Tier1VerificationMod
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Complete Tier 1 Verification">
-      <div className="mb-6 flex items-start gap-4 rounded-2xl bg-[#f0fdfa] p-5 border border-[#ccfbf1]">
-        <div className="rounded-full bg-[#ccfbf1] p-2 text-[#14b8a6]">
+      <div className="mb-6 flex items-start gap-4 rounded-lg bg-[#ecfdf5] p-5 border border-[#d1fae5]">
+        <div className="rounded-full bg-[#d1fae5] p-2 text-[#047857]">
           <ShieldCheck className="h-5 w-5" />
         </div>
         <div>
-          <h4 className="text-sm font-semibold text-[#111827]">Build your reputation</h4>
-          <p className="mt-1 text-xs leading-5 text-[#6b7280]">
+          <h4 className="text-sm font-semibold text-[var(--foreground)]">Build your reputation</h4>
+          <p className="mt-1 text-xs leading-5 text-[var(--color-ink-muted)]">
             Providing your legal name and email allows us to create a 
             <strong> real virtual account</strong> for you via Squad API.
           </p>
@@ -96,7 +96,7 @@ export function Tier1VerificationModal({ isOpen, onClose }: Tier1VerificationMod
             <UserCheck className="h-4 w-4" />
             Verify & Create Account
           </Button>
-          <p className="mt-4 text-center text-[10px] text-[#9ca3af]">
+          <p className="mt-4 text-center text-[10px] text-[var(--color-ink-muted)]">
             By continuing, you agree to our Terms of Service and Privacy Policy. 
             Your data is processed securely via Squad API (Sandbox).
           </p>

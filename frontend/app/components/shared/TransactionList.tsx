@@ -23,20 +23,20 @@ export function TransactionList({ transactions }: { transactions: TransactionRec
         return (
           <div
             key={transaction.id}
-            className="flex flex-col gap-3 rounded-2xl border border-[#e5e7eb] bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
+            className="flex flex-col gap-3 rounded-lg border border-[var(--color-line)] bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
           >
             <div className="flex items-start gap-3">
-              <div className="rounded-2xl bg-[#f9fafb] p-3 text-[#14b8a6]">
+              <div className="rounded-lg bg-[var(--color-surface)] p-3 text-[var(--color-brand)]">
                 <Icon className="h-4 w-4" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-[#111827]">{transaction.description}</p>
-                <p className="mt-1 text-sm text-[#6b7280]">{formatLongDate(transaction.createdAt)}</p>
+                <p className="text-sm font-semibold text-[var(--foreground)]">{transaction.description}</p>
+                <p className="mt-1 text-sm text-[var(--color-ink-muted)]">{formatLongDate(transaction.createdAt)}</p>
               </div>
             </div>
 
             <div className="text-left sm:text-right">
-              <p className="text-sm font-semibold text-[#111827]">{formatCurrency(transaction.amount)}</p>
+              <p className="text-sm font-semibold text-[var(--foreground)]">{formatCurrency(transaction.amount)}</p>
               <span
                 className={cn(
                   "mt-1 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold",

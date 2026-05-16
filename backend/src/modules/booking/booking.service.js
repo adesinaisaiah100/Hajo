@@ -4,8 +4,19 @@ const { transferRelease } = require('../../integrations/squad/squad.transfer');
 const { createTransaction, updateStatus } = require('../transactions/transaction.service');
 const { getEnv } = require('../../config/env');
 
+// Trades that require a quotation (Gemini draft + artisan review)
+const MATERIAL_CATEGORIES = [
+  'Electrical', 'Plumbing', 'Carpentry', 'AC Maintenance', 
+  'Tailoring', 'Painting', 'Welding', 'Construction'
+];
+
 // Create booking (initial request)
 async function createBooking({ customerId, providerId, serviceId, amount, currency = 'NGN', scheduledAt, notes }) {
+  const service = await prisma.service.findUnique({ where: { id: serviceId } });
+  const customer = await prisma.user.findUnique({ where: { id: customerId } });
+
+  if (!service) throw new Error('Service not found');
+
   const booking = await prisma.booking.create({
     data: {
       customerId,
@@ -24,14 +35,14 @@ async function createBooking({ customerId, providerId, serviceId, amount, curren
   const payment = await initiateHostedPayment({
     amount: Number(amount),
     currency,
-    email: '',
-    customer_name: '',
+    email: customer.email || `${customer.phone}@hajo.ng`,
+    customer_name: `${customer.firstName} ${customer.lastName}`,
     transaction_ref: transactionRef,
     callback_url: getEnv().NEXT_PUBLIC_APP_URL + '/payments/callback',
     metadata: { bookingId: booking.id }
   });
 
-  const trx = await createTransaction({
+  await createTransaction({
     userId: customerId,
     bookingId: booking.id,
     type: 'ESCROW_CHARGE',
@@ -42,13 +53,14 @@ async function createBooking({ customerId, providerId, serviceId, amount, curren
     metadata: payment
   });
 
-  // Phase 3.5: Trigger quotation generation asynchronously
-  try {
-    const quotationService = require('../quotations/quotation.service');
-    const service = await prisma.service.findUnique({ where: { id: serviceId } });
-    const customer = await prisma.user.findUnique({ where: { id: customerId } });
-    
-    if (service && customer) {
+  // Determine if this trade needs a quotation
+  const needsQuotation = MATERIAL_CATEGORIES.includes(service.category);
+
+  if (needsQuotation) {
+    // Phase 3.5: Trigger quotation generation asynchronously
+    try {
+      const quotationService = require('../quotations/quotation.service');
+      
       await quotationService.generateDraft(
         booking.id,
         {
@@ -64,55 +76,36 @@ async function createBooking({ customerId, providerId, serviceId, amount, curren
         }
       );
       console.log(`[Booking] Quotation generated for booking ${booking.id}`);
+    } catch (error) {
+      console.error(`[Booking] Failed to generate quotation for booking ${booking.id}:`, error.message);
     }
-  } catch (error) {
-    console.error(`[Booking] Failed to generate quotation for booking ${booking.id}:`, error.message);
-    // Don't fail the booking if quotation generation fails
+  } else {
+    // Fixed price flow - Just notify the artisan (handled by status being PENDING)
+    console.log(`[Booking] Fixed price booking created for ${service.category}`);
   }
 
-  return { booking, transaction: trx, checkout: payment.checkout_url || null };
+  return { booking, checkout: payment.checkout_url || null };
 }
 
 // Provider accepts booking (charges escrow)
 async function acceptBooking(bookingId, providerId) {
   const booking = await prisma.booking.findUnique({ 
     where: { id: bookingId },
-    include: { quotation: true }
+    include: { quotation: true, service: true }
   });
   if (!booking || booking.providerId !== providerId) throw new Error('Booking not found or unauthorized');
   
   // If quotation exists, it must be accepted via quotationService.acceptQuotation by the customer
-  if (booking.quotation) {
+  if (booking.quotation && ['DRAFT', 'SENT', 'NEGOTIATING'].includes(booking.quotation.status)) {
     throw new Error('This booking requires a quotation. It must be accepted by the customer.');
   }
 
   if (booking.status !== 'PENDING') throw new Error('Booking cannot be accepted in current state');
 
-  const chargeRef = `sb_accept_${bookingId}`;
-  const charge = await chargeEscrow({
-    amount: Number(booking.amount),
-    currency: booking.currency,
-    email: '',
-    customer_name: '',
-    transaction_ref: chargeRef,
-    bookingId,
-    metadata: { action: 'booking_accept' }
-  });
-
+  // For fixed-price bookings, acceptance moves it straight to ACCEPTED (Active)
   const updated = await prisma.booking.update({
     where: { id: bookingId },
-    data: { status: 'ACCEPTED', squadEscrowRef: charge.gateway_ref || charge.transaction_ref }
-  });
-
-  await createTransaction({
-    userId: booking.customerId,
-    bookingId,
-    type: 'ESCROW_CHARGE',
-    amount: booking.amount,
-    currency: booking.currency,
-    squadRef: charge.gateway_ref || charge.transaction_ref || `mock_${chargeRef}`,
-    squadEvent: 'booking.accepted',
-    metadata: charge
+    data: { status: 'ACCEPTED', acceptedAt: new Date() }
   });
 
   return updated;

@@ -21,14 +21,14 @@ export function Button({
 }: ButtonProps) {
   const baseClasses = [
     "inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition-all duration-200",
-    "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#14b8a6]",
+    "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-brand)]",
     "disabled:cursor-not-allowed disabled:opacity-60 disabled:pointer-events-none",
   ].join(" ");
 
   const variantClasses = {
-    primary: "bg-[#14b8a6] text-white hover:bg-[#0d9488] active:scale-95 shadow-card hover:shadow-hover",
-    secondary: "bg-white text-[#111827] border-2 border-[#e5e7eb] hover:border-[#14b8a6] hover:bg-[#f0fdfa] active:scale-95",
-    ghost: "text-[#14b8a6] hover:bg-[#f0fdfa] active:scale-95",
+    primary: "bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand-strong)] active:scale-95 shadow-card hover:shadow-hover",
+    secondary: "bg-white text-[var(--foreground)] border-2 border-[var(--color-line)] hover:border-[var(--color-brand)] hover:bg-[var(--color-surface)] active:scale-95",
+    ghost: "text-[var(--color-brand)] hover:bg-[var(--color-surface)] active:scale-95",
   };
 
   const sizeClasses = {

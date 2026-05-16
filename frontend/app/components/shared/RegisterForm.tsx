@@ -2,20 +2,27 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { api } from "@/app/services/api";
 import { useAuthStore, type UserRole } from "@/app/store/auth.store";
 import { Button } from "@/app/components/ui/Button";
 import { Input } from "@/app/components/ui/Input";
 import { toast } from "@/app/store/toast.store";
-
 export function RegisterForm() {
   const router = useRouter();
-  const [role, setRole] = useState<UserRole>("provider");
+  const searchParams = useSearchParams();
+  const paramRole = searchParams.get("role");
+  const [role, setRole] = useState<UserRole>(
+    paramRole === "customer" ? "customer" : "provider"
+  );
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const setPendingRole = useAuthStore((state) => state.setRole);
+
+  // role is derived from URL params at init to avoid an extra render cycle
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -24,6 +31,8 @@ export function RegisterForm() {
 
     try {
       const response = await api.post("/auth/register", {
+        firstName,
+        lastName,
         phone,
         role: role?.toUpperCase(),
       });
@@ -54,20 +63,18 @@ export function RegisterForm() {
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
       <div>
-        <p className="text-sm font-semibold uppercase tracking-wider text-[#14b8a6]">
-          Select role
-        </p>
+        <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--color-brand)]">Who are you?</p>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           {[
             {
               value: "provider" as const,
               title: "Service provider",
-              body: "For workers who want discovery, safer payments, and a growing financial record.",
+              body: "Build a verified profile, receive escrowed payments, and grow your reputation.",
             },
             {
               value: "customer" as const,
               title: "Customer",
-              body: "For people who want to search, book, and pay trusted local providers safely.",
+              body: "Find skilled local providers, book with confidence, and pay on completion.",
             },
           ].map((option) => (
             <button
@@ -76,17 +83,32 @@ export function RegisterForm() {
               onClick={() => setRole(option.value)}
               className={`rounded-lg border-2 p-5 text-left transition ${
                 role === option.value
-                  ? "border-[#14b8a6] bg-[#f0fdfa]"
-                  : "border-[#e5e7eb] bg-white hover:border-[#14b8a6]"
+                  ? "border-[var(--color-brand)] bg-[var(--color-surface)] shadow-sm"
+                  : "border-[var(--color-line)] bg-white hover:border-[var(--color-brand)]"
               }`}
             >
-              <p className="text-lg font-bold text-[#111827]">{option.title}</p>
-              <p className="mt-2 text-sm leading-7 text-[#6b7280]">
-                {option.body}
-              </p>
+              <p className="text-lg font-bold text-[var(--foreground)]">{option.title}</p>
+              <p className="mt-2 text-sm leading-7 text-[var(--color-ink-muted)]">{option.body}</p>
             </button>
           ))}
         </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Input
+          label="First name"
+          value={firstName}
+          onChange={(event) => setFirstName(event.target.value)}
+          placeholder="John"
+          required
+        />
+        <Input
+          label="Last name"
+          value={lastName}
+          onChange={(event) => setLastName(event.target.value)}
+          placeholder="Doe"
+          required
+        />
       </div>
 
       <Input
@@ -98,7 +120,7 @@ export function RegisterForm() {
       />
 
       {status ? (
-        <p className="rounded-lg bg-[#ecfdf5] border border-[#a7f3d0] px-4 py-3 text-sm leading-7 text-[#047857] font-medium">
+        <p className="rounded-lg bg-[var(--color-surface)] border border-[var(--color-line)] px-4 py-3 text-sm leading-7 text-[var(--color-ink-muted)] font-medium">
           {status}
         </p>
       ) : null}
@@ -107,11 +129,8 @@ export function RegisterForm() {
         <Button type="submit" isLoading={isSubmitting}>
           Create account
         </Button>
-        <Link
-          href="/verify-otp"
-          className="text-sm font-semibold text-[#14b8a6] transition hover:text-[#0d9488]"
-        >
-          Already have an OTP? Verify now
+        <Link href="/verify-otp" className="text-sm font-semibold text-[var(--color-brand)] transition hover:text-[var(--color-brand-strong)]">
+          Have an OTP? Verify
         </Link>
       </div>
     </form>

@@ -44,6 +44,11 @@ export function LoginForm() {
 
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
+      <div className="soft-reveal">
+        <label className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-brand)]">Sign in</label>
+        <h3 className="mt-1 text-2xl font-semibold text-[var(--foreground)]">Enter your phone</h3>
+      </div>
+
       <Input
         label="Phone number"
         value={phone}
@@ -53,20 +58,20 @@ export function LoginForm() {
       />
 
       {status ? (
-        <p className="rounded-lg bg-[#ecfdf5] border border-[#a7f3d0] px-4 py-3 text-sm leading-7 text-[#047857] font-medium">
+        <p className="rounded-lg bg-[var(--color-surface)] border border-[var(--color-line)] px-4 py-3 text-sm leading-7 text-[var(--color-ink-muted)] font-medium">
           {status}
         </p>
       ) : null}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <Button type="submit" isLoading={isSubmitting}>
+        <Button type="submit" isLoading={isSubmitting} className="soft-reveal">
           Send OTP
         </Button>
         <Link
           href="/verify-otp"
-          className="text-sm font-semibold text-[#14b8a6] transition hover:text-[#0d9488]"
+          className="text-sm font-semibold text-[var(--color-brand)] transition hover:text-[var(--color-brand-strong)]"
         >
-          Go to OTP verification
+          Already have a code?
         </Link>
       </div>
     </form>

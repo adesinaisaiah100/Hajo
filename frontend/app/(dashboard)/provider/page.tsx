@@ -45,24 +45,24 @@ export default function ProviderDashboardPage() {
     <div className="space-y-6">
       {/* Greeting */}
       <div>
-        <h1 className="text-2xl font-bold text-[#111827]">
+        <h1 className="text-2xl font-bold text-[var(--foreground)]">
           Good morning, {user?.firstName || provider?.name?.split(' ')[0] || 'Provider'}. Here&apos;s your business today.
         </h1>
       </div>
 
       {/* Credit Score Banner */}
-      <div className="rounded-2xl border border-[#e5e7eb] bg-white p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="rounded-lg border border-[var(--color-line)] bg-white p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#f3f4f6]">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--color-surface)]">
              {/* Using ScoreBadge just for the visual or just simple text */}
-             <span className="text-xl font-bold text-[#111827]">67</span>
+             <span className="text-xl font-bold text-[var(--foreground)]">67</span>
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold text-[#111827]">Your Credit Score</h2>
+              <h2 className="text-lg font-semibold text-[var(--foreground)]">Your Credit Score</h2>
               {provider && <ScoreBadge tier={provider.tier} />}
             </div>
-            <p className="text-sm text-[#6b7280]">
+            <p className="text-sm text-[var(--color-ink-muted)]">
               You need 8 more completed jobs to reach Platinum.
             </p>
           </div>
@@ -74,35 +74,35 @@ export default function ProviderDashboardPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5">
-          <div className="flex items-center gap-2 text-[#6b7280]">
+        <div className="rounded-lg border border-[var(--color-line)] bg-white p-5">
+          <div className="flex items-center gap-2 text-[var(--color-ink-muted)]">
             <TrendingUp className="h-4 w-4" />
             <span className="text-sm font-medium">Total Earned</span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-[#111827]">
+          <p className="mt-2 text-2xl font-bold text-[var(--foreground)]">
             ₦{wallet.totalEarnings?.toLocaleString() || 0}
           </p>
         </div>
-        <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5">
-          <div className="flex items-center gap-2 text-[#6b7280]">
+        <div className="rounded-lg border border-[var(--color-line)] bg-white p-5">
+          <div className="flex items-center gap-2 text-[var(--color-ink-muted)]">
             <CheckCircle2 className="h-4 w-4" />
             <span className="text-sm font-medium">Jobs Completed</span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-[#111827]">{provider?.jobsCompleted || 0}</p>
+          <p className="mt-2 text-2xl font-bold text-[var(--foreground)]">{provider?.jobsCompleted || 0}</p>
         </div>
-        <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5">
-          <div className="flex items-center gap-2 text-[#6b7280]">
+        <div className="rounded-lg border border-[var(--color-line)] bg-white p-5">
+          <div className="flex items-center gap-2 text-[var(--color-ink-muted)]">
             <Star className="h-4 w-4" />
             <span className="text-sm font-medium">Avg Rating</span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-[#111827]">{provider?.rating || '0.0'}</p>
+          <p className="mt-2 text-2xl font-bold text-[var(--foreground)]">{provider?.rating || '0.0'}</p>
         </div>
-        <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5">
-          <div className="flex items-center gap-2 text-[#6b7280]">
+        <div className="rounded-lg border border-[var(--color-line)] bg-white p-5">
+          <div className="flex items-center gap-2 text-[var(--color-ink-muted)]">
             <Calendar className="h-4 w-4" />
             <span className="text-sm font-medium">Active Bookings</span>
           </div>
-          <p className="mt-2 text-2xl font-bold text-[#111827]">
+          <p className="mt-2 text-2xl font-bold text-[var(--foreground)]">
             {bookings.filter(b => b.status === "ACCEPTED").length}
           </p>
         </div>
@@ -114,7 +114,7 @@ export default function ProviderDashboardPage() {
           <SectionCard 
             title="Revenue Overview" 
             action={
-              <Link href="/provider/analytics" className="text-sm font-medium text-[#14b8a6] hover:text-[#0d9488]">
+              <Link href="/provider/analytics" className="text-sm font-medium text-[var(--color-brand)] hover:text-[var(--color-brand-strong)]">
                 View all analytics
               </Link>
             }
@@ -125,7 +125,7 @@ export default function ProviderDashboardPage() {
           <SectionCard 
             title="Recent Bookings" 
             action={
-              <Link href="/provider/bookings" className="text-sm font-medium text-[#14b8a6] hover:text-[#0d9488]">
+              <Link href="/provider/bookings" className="text-sm font-medium text-[var(--color-brand)] hover:text-[var(--color-brand-strong)]">
                 View all
               </Link>
             }
@@ -136,7 +136,7 @@ export default function ProviderDashboardPage() {
                   <BookingCard key={booking.id} booking={booking} role="provider" />
                 ))
               ) : (
-                <p className="text-sm text-[#6b7280]">No recent bookings.</p>
+                <p className="text-sm text-[var(--color-ink-muted)]">No recent bookings.</p>
               )}
             </div>
           </SectionCard>
@@ -167,17 +167,17 @@ export default function ProviderDashboardPage() {
             </div>
           </SectionCard>
 
-          <div className="rounded-2xl bg-[#f0fdfa] border border-[#ccfbf1] p-5">
+          <div className="rounded-lg bg-[var(--color-surface)] border border-[var(--color-line)] p-5">
             <div className="flex items-start gap-3">
-              <div className="rounded-full bg-[#ccfbf1] p-2">
-                <Lightbulb className="h-5 w-5 text-[#0d9488]" />
+              <div className="rounded-full bg-[var(--color-surface)] p-2">
+                <Lightbulb className="h-5 w-5 text-[var(--color-success)]" />
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-[#111827]">Business Tip</h3>
-                <p className="mt-1 text-sm text-[#0f766e]">
+                <h3 className="text-sm font-semibold text-[var(--foreground)]">Business Tip</h3>
+                <p className="mt-1 text-sm text-[var(--color-success)]">
                   Saturdays are your peak day. Consider updating your availability for weekends to capture more bookings.
                 </p>
-                <Link href="/provider/insights" className="mt-3 inline-block text-xs font-medium text-[#14b8a6] hover:underline">
+                <Link href="/provider/insights" className="mt-3 inline-block text-xs font-medium text-[var(--color-brand)] hover:underline">
                   See all insights →
                 </Link>
               </div>
@@ -190,7 +190,7 @@ export default function ProviderDashboardPage() {
 }
 
 // Lightbulb component inline just for the tip icon
-function Lightbulb(props: any) {
+function Lightbulb(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}

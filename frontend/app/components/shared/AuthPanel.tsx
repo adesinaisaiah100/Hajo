@@ -13,53 +13,38 @@ export function AuthPanel({
   children: ReactNode;
 }) {
   return (
-    <div className="grid w-full max-w-5xl gap-10 lg:gap-16 lg:grid-cols-[1fr_1.1fr]">
+    <div className="grid w-full max-w-5xl gap-8 lg:gap-14 lg:grid-cols-[1fr_1.05fr]">
       {/* Left Panel - Hero Content */}
-      <div className="flex flex-col justify-center space-y-6 sm:space-y-8">
-        <Link
-          href="/"
-          className="inline-flex w-fit items-center gap-2 rounded-full border border-[#e5e7eb] px-3 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-[#14b8a6] transition hover:border-[#14b8a6] hover:bg-[#f9fafb]"
-        >
-          <span>←</span> Back
+      <div className="flex flex-col justify-center gap-6 sm:gap-8">
+        <Link href="/" className="inline-flex items-center gap-2 text-sm font-medium text-[var(--color-ink-muted)] hover:text-[var(--foreground)] transition-colors">
+          <span className="rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-2.5 py-1 text-[var(--color-brand)] text-xs">←</span>
+          <span className="uppercase tracking-wider">Back to home</span>
         </Link>
 
-        <div className="space-y-2 sm:space-y-3">
-          <p className="text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-[#14b8a6]">
-            {eyebrow}
-          </p>
-          <h1 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight text-[#111827] lg:text-5xl">
-            {title}
-          </h1>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-brand)] mb-2">{eyebrow}</p>
+          <h2 className="text-4xl sm:text-5xl font-semibold text-[var(--foreground)] leading-tight">{title}</h2>
         </div>
 
-        <p className="max-w-md text-base sm:text-lg leading-relaxed text-[#6b7280]">
-          {description}
-        </p>
+        <p className="max-w-md text-base leading-relaxed text-[var(--color-ink-muted)]">{description}</p>
 
-        {/* Feature Highlights */}
-        <div className="hidden sm:block space-y-4 rounded-2xl bg-[#f0fdfa] border border-[#ccfbf1] p-6 shadow-sm">
-          <div className="flex gap-3 items-start">
-            <div className="mt-0.5 h-5 w-5 rounded-full bg-[#10b981] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-              ✓
-            </div>
-            <p className="text-sm leading-relaxed text-[#111827]">
-              Phone-first onboarding keeps the flow accessible for providers who mainly work from mobile devices.
-            </p>
-          </div>
-          <div className="flex gap-3 items-start">
-            <div className="mt-0.5 h-5 w-5 rounded-full bg-[#10b981] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-              ✓
-            </div>
-            <p className="text-sm leading-relaxed text-[#111827]">
-              Fast registration unlocks wallet creation and booking discovery within minutes.
-            </p>
-          </div>
+        <div className="hidden sm:block mt-4 rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)] p-6">
+          <ul className="space-y-3 text-sm text-[var(--foreground)]">
+            <li className="flex items-start gap-3">
+              <span className="mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[var(--color-brand)] text-white text-xs font-bold">✓</span>
+              Phone-first onboarding and progressive verification
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[var(--color-brand)] text-white text-xs font-bold">✓</span>
+              Fast wallet creation and escrow flow for artisans
+            </li>
+          </ul>
         </div>
       </div>
 
       {/* Right Panel - Form Card */}
       <div className="flex items-center justify-center">
-        <div className="w-full rounded-3xl border border-[#e5e7eb] bg-white p-6 sm:p-10 shadow-sm">
+        <div className="w-full rounded-2xl border border-[var(--color-line)] bg-white p-8 sm:p-10 shadow-sm">
           {children}
         </div>
       </div>

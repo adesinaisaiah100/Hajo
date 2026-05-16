@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "cd frontend && npm run dev",
-    "demo": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm run dev\"",
+    "demo": "docker-compose up -d postgres && concurrently \"cd backend && npm run dev\" \"cd frontend && npm run dev\"",
     "build": "cd frontend && npm run build",
     "start": "cd frontend && npm run start",
     "lint": "cd frontend && npm run lint"
