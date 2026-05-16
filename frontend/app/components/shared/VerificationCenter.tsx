@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/app/store/auth.store";
 import { Button } from "@/app/components/ui/Button";
 import { 
@@ -23,9 +24,16 @@ import { toast } from "@/app/store/toast.store";
 
 export function VerificationCenter() {
   const { user } = useAuthStore();
+  const searchParams = useSearchParams();
   const [showTier1, setShowTier1] = useState(false);
   const [showTier2, setShowTier2] = useState(false);
   const [showTier3, setShowTier3] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("start") === "tier1") {
+      setShowTier1(true);
+    }
+  }, [searchParams]);
 
   const tiers = [
     {

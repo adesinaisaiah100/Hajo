@@ -51,12 +51,16 @@ export function BookingForm({ provider }: { provider: ProviderProfile }) {
     if (!user?.squadAccountNo) {
       toast.warning(
         "Verification Required",
-        "You need to create a virtual account to make bookings. Complete your Tier 1 verification to continue."
+        "You need to create a virtual account to make bookings. Complete your Tier 1 verification to continue.",
+        {
+          label: "Verify Now →",
+          onClick: () => router.push("/customer/verification?start=tier1"),
+        }
       );
       // Navigate to verification page after a short delay
       setTimeout(() => {
-        router.push("/customer/verification");
-      }, 1000);
+        router.push("/customer/verification?start=tier1");
+      }, 1500);
       return;
     }
 
@@ -149,7 +153,7 @@ export function BookingForm({ provider }: { provider: ProviderProfile }) {
                   </p>
                   <button
                     type="button"
-                    onClick={() => router.push("/customer/verification")}
+                    onClick={() => router.push("/customer/verification?start=tier1")}
                     className="mt-3 text-sm font-semibold text-[#dc2626] hover:text-[#991b1b] underline"
                   >
                     Go to Trust Center →

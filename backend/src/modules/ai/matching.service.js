@@ -2,20 +2,67 @@ const { prisma } = require('../../config/database');
 const { geminiClient } = require('../../integrations/gemini/gemini.client');
 
 /**
- * Match and rank providers based on a natural language query
+ * Agentic Search: Extracts intent and filters, queries DB, and refines results.
  */
 async function matchProviders(query, filters = {}) {
-  const { city, minRating = 0, limit = 15 } = filters;
+  // 1. Extraction Phase - Ask Gemini to understand the query and return search filters
+  const extractionPrompt = `
+You are a Hajo Search Agent. Extract search filters from this query: "${query}"
+The city mentioned might be "${filters.city || 'any'}".
 
-  // 1. Fetch relevant providers from DB first (Spatial/Category filtering)
+Respond with ONLY a JSON object:
+{
+  "category": "Electrician" | "Plumber" | "Tailor" | "Barber" | "Hair Stylist" | "Carpenter" | "Cleaner" | "Event Planner" | "Caterer" | "Painter" | null,
+  "city": "string or null",
+  "minRating": number (0-5),
+  "maxPrice": number or null,
+  "keywords": ["string"],
+  "intent": "string (brief summary of what they need)"
+}
+`;
+
+  let extractedFilters = { category: null, city: filters.city || null, minRating: 0, maxPrice: null, keywords: [] };
+  try {
+    const aiFilters = await geminiClient.generateInsights(extractionPrompt);
+    if (aiFilters && typeof aiFilters === 'object') {
+      extractedFilters = { ...extractedFilters, ...aiFilters };
+    }
+  } catch (error) {
+    console.error('[Search Agent] Extraction failed:', error.message);
+  }
+
+  // 2. Database Phase - Query Prisma with extracted filters
+  const where = {
+    verificationStatus: 'verified',
+    averageRating: { gte: extractedFilters.minRating || 0 },
+  };
+
+  if (extractedFilters.category) {
+    where.category = extractedFilters.category;
+  }
+
+  if (extractedFilters.city || filters.city) {
+    where.user = {
+      city: extractedFilters.city || filters.city,
+    };
+  }
+
+  if (extractedFilters.maxPrice) {
+    where.priceFrom = { lte: extractedFilters.maxPrice };
+  }
+
+  // Keyword search in bio/tradeName if keywords exist
+  if (extractedFilters.keywords && extractedFilters.keywords.length > 0) {
+    where.OR = extractedFilters.keywords.map(keyword => ({
+      OR: [
+        { bio: { contains: keyword, mode: 'insensitive' } },
+        { tradeName: { contains: keyword, mode: 'insensitive' } },
+      ]
+    }));
+  }
+
   const providers = await prisma.provider.findMany({
-    where: {
-      verificationStatus: 'verified',
-      averageRating: { gte: minRating },
-      user: {
-        city: city || undefined,
-      },
-    },
+    where,
     include: {
       user: {
         select: {
@@ -23,74 +70,53 @@ async function matchProviders(query, filters = {}) {
           lastName: true,
           city: true,
           verificationTier: true,
+          avatarUrl: true,
         },
       },
+      reviews: {
+        take: 3,
+        orderBy: { createdAt: 'desc' }
+      }
     },
-    take: 50, // Fetch a pool for AI to rank
+    take: 20,
   });
 
-  if (providers.length === 0) return [];
+  if (providers.length === 0) {
+    // Broaden search if no results
+    return prisma.provider.findMany({
+      where: { verificationStatus: 'verified', category: extractedFilters.category || undefined },
+      include: {
+        user: { select: { firstName: true, lastName: true, city: true, verificationTier: true, avatarUrl: true } }
+      },
+      take: 5
+    }).then(results => results.map(p => ({ ...p, matchReason: 'Highly rated in your category' })));
+  }
 
-  // 2. Prepare context for Gemini
-  const providerPool = providers.map((p) => ({
+  // 3. Refinement Phase - Use AI to explain WHY these match the specific intent
+  const providerContext = providers.map(p => ({
     id: p.id,
-    name: `${p.user.firstName} ${p.user.lastName}`,
+    name: p.user.firstName,
     tradeName: p.tradeName,
-    category: p.category,
     bio: p.bio,
-    rating: p.averageRating,
-    jobs: p.completedJobs,
     tier: p.user.verificationTier,
-    location: p.user.city,
   }));
 
-  const prompt = `
-You are an intelligent matching engine for Hajo, a Nigerian services marketplace.
-User Query: "${query}"
+  const refinementPrompt = `
+User wanted: "${query}" (Intent: ${extractedFilters.intent || 'General search'})
+Artisans found: ${JSON.stringify(providerContext)}
 
-Below is a list of verified service providers. Rank the top ${limit} providers that best match the user's needs.
-Return ONLY a JSON array of objects with "id", "rank" (1-10), and "matchReason" (one short sentence).
-
-Providers:
-${JSON.stringify(providerPool, null, 2)}
-
-Considerations:
-- Trade relevance to the query
-- Experience and rating
-- Verification tier (Platinum/Gold are higher trust)
-- Location proximity (if mentioned in query)
+For each artisan, provide a "matchReason" that explains why they fit this specific request.
+Return ONLY a JSON object mapping id to matchReason string: {"id": "reason"}
 `;
 
   try {
-    const rankings = await geminiClient.generateInsights(prompt);
-    
-    if (!rankings || !Array.isArray(rankings)) {
-      console.warn('[AI Match] Gemini returned invalid format, using default sorting');
-      return providers.slice(0, limit).map(p => ({ ...p, matchReason: 'Top rated professional' }));
-    }
-
-    // 3. Enrich and sort the results based on AI rankings
-    const rankedResults = rankings
-      .map((rank) => {
-        const provider = providers.find((p) => p.id === rank.id);
-        if (!provider) return null;
-        return {
-          ...provider,
-          matchReason: rank.matchReason,
-          aiRank: rank.rank,
-        };
-      })
-      .filter(Boolean)
-      .sort((a, b) => a.aiRank - b.aiRank);
-
-    return rankedResults;
+    const matchReasons = await geminiClient.generateInsights(refinementPrompt);
+    return providers.map(p => ({
+      ...p,
+      matchReason: matchReasons?.[p.id] || `Verified ${p.category} in ${p.user.city}`
+    }));
   } catch (error) {
-    console.error('[AI Match] Gemini matching failed:', error.message);
-    // Fallback: Return by rating
-    return providers
-      .sort((a, b) => b.averageRating - a.averageRating)
-      .slice(0, limit)
-      .map(p => ({ ...p, matchReason: 'Verified professional with good reviews' }));
+    return providers.map(p => ({ ...p, matchReason: `Verified ${p.category} professional` }));
   }
 }
 

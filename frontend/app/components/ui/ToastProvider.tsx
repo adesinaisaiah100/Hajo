@@ -1,7 +1,7 @@
 "use client";
 
 import { useToastStore } from "@/app/store/toast.store";
-import { CheckCircle2, AlertCircle, Info, X } from "lucide-react";
+import { CheckCircle2, AlertCircle, Info, X, AlertTriangle } from "lucide-react";
 
 export function ToastProvider() {
   const toasts = useToastStore((state) => state.toasts);
@@ -14,6 +14,7 @@ export function ToastProvider() {
           success: <CheckCircle2 className="h-5 w-5 text-[#10b981]" />,
           error: <AlertCircle className="h-5 w-5 text-[#ef4444]" />,
           info: <Info className="h-5 w-5 text-[#3b82f6]" />,
+          warning: <AlertTriangle className="h-5 w-5 text-[#f59e0b]" />,
         };
 
         return (
@@ -23,10 +24,21 @@ export function ToastProvider() {
             className="pointer-events-auto flex items-start gap-3 rounded-xl border border-[#e5e7eb] bg-white p-4 shadow-lg w-full"
           >
             <div className="flex-shrink-0 mt-0.5">{icons[t.type]}</div>
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-[#111827]">{t.title}</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-[#111827] truncate">{t.title}</p>
               {t.description && (
                 <p className="mt-1 text-sm text-[#6b7280]">{t.description}</p>
+              )}
+              {t.action && (
+                <button
+                  onClick={() => {
+                    t.action?.onClick();
+                    removeToast(t.id);
+                  }}
+                  className="mt-2 text-xs font-bold text-[var(--color-brand)] hover:underline"
+                >
+                  {t.action.label}
+                </button>
               )}
             </div>
             <button

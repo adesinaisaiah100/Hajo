@@ -11,25 +11,35 @@ const apiBase = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 export async function searchProviders(query: string, city?: string): Promise<ProviderProfile[]> {
   try {
     const response = await api.post("/ai/match", { query, city });
-    const data = response.data?.data;
+    const data = response.data?.data ?? response.data?.providers ?? response.data;
     
     if (data && Array.isArray(data)) {
-      return data.map((p: ProviderProfile) => ({
+      return data.map((p: any) => ({
         id: p.id,
         name: `${p.user.firstName} ${p.user.lastName}`,
         tradeName: p.tradeName,
         category: p.category,
         bio: p.bio,
-        rating: p.averageRating,
+        rating: Number(p.averageRating || 0),
         reviewCount: p.reviews?.length || 0,
-        distance: "Nearby", // In real app, calculate based on user location
-        priceFrom: p.priceFrom,
-        priceTo: p.priceTo,
+        distanceKm: 2.5, // Mocked distance for now
+        priceFrom: Number(p.priceFrom || 0),
+        priceTo: Number(p.priceTo || 0),
         isAvailable: true,
-        verificationTier: p.user.verificationTier,
-        matchReason: p.matchReason,
+        tier: p.user.verificationTier,
+        verified: p.verificationStatus === 'verified',
+        matchReasons: [p.matchReason].filter(Boolean),
         reviews: [],
         avatarUrl: p.user.avatarUrl,
+        heroImageUrl: p.heroImageUrl || "",
+        skills: p.skills || [],
+        languages: ["English"],
+        responseTime: "Replies in 15 mins",
+        jobsCompleted: p.completedJobs || 0,
+        memberSince: p.createdAt,
+        area: p.user.city || "Lagos",
+        city: p.user.city || "Lagos",
+        services: p.services || []
       }));
     }
   } catch (error) {
